@@ -7,6 +7,7 @@ namespace FarmerAPI.ViewModels
 {
     public class vmMenu
     {
+        public string Path { get; set; }
         public string MenuText { get; set; }        
         public string Component { get; set; }
     }

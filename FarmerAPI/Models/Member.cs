@@ -5,11 +5,25 @@ namespace FarmerAPI.Models
 {
     public partial class Member
     {
+        public Member()
+        {
+            ImemRole = new HashSet<ImemRole>();
+            SystemLog = new HashSet<SystemLog>();
+        }
+
         public string Domain { get; set; }
-        public string Name { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
         public string DeptId { get; set; }
-        public string MemId { get; set; }
-        public string MemPw { get; set; }
+        public string Account { get; set; }
+        public string Password { get; set; }
+        public string Email { get; set; }
         public bool IsActive { get; set; }
+        public DateTime? AddTime { get; set; }
+        public DateTime? UpdatedTime { get; set; }
+
+        public Token Token { get; set; }
+        public ICollection<ImemRole> ImemRole { get; set; }
+        public ICollection<SystemLog> SystemLog { get; set; }
     }
 }

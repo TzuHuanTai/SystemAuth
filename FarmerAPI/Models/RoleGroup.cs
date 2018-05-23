@@ -5,6 +5,12 @@ namespace FarmerAPI.Models
 {
     public partial class RoleGroup
     {
+        public RoleGroup()
+        {
+            ImemRole = new HashSet<ImemRole>();
+            ImenuRole = new HashSet<ImenuRole>();
+        }
+
         public int RoleId { get; set; }
         public string RoleName { get; set; }
         public int SortNo { get; set; }
@@ -16,5 +22,8 @@ namespace FarmerAPI.Models
         public bool SubmitScope { get; set; }
         public bool PassScope { get; set; }
         public bool PrintScope { get; set; }
+
+        public ICollection<ImemRole> ImemRole { get; set; }
+        public ICollection<ImenuRole> ImenuRole { get; set; }
     }
 }

@@ -10,12 +10,12 @@ namespace FarmerAPI.Models
             WeatherData = new HashSet<WeatherData>();
         }
 
-        public int Num { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; }
         public int? CityId { get; set; }
+        public string Address { get; set; }
 
-        public StationInfo NumNavigation { get; set; }
-        public StationInfo InverseNumNavigation { get; set; }
+        public City City { get; set; }
         public ICollection<WeatherData> WeatherData { get; set; }
     }
 }

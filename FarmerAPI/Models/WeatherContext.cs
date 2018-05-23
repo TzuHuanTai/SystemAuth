@@ -7,6 +7,7 @@ namespace FarmerAPI.Models
     public partial class WeatherContext : DbContext
     {
         public virtual DbSet<City> City { get; set; }
+        public virtual DbSet<ImemRole> ImemRole { get; set; }
         public virtual DbSet<ImenuRole> ImenuRole { get; set; }
         public virtual DbSet<Member> Member { get; set; }
         public virtual DbSet<Menu> Menu { get; set; }
@@ -14,6 +15,7 @@ namespace FarmerAPI.Models
         public virtual DbSet<RoleGroup> RoleGroup { get; set; }
         public virtual DbSet<StationInfo> StationInfo { get; set; }
         public virtual DbSet<SystemLog> SystemLog { get; set; }
+        public virtual DbSet<Token> Token { get; set; }
         public virtual DbSet<WeatherData> WeatherData { get; set; }
 
         //        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -21,11 +23,14 @@ namespace FarmerAPI.Models
         //            if (!optionsBuilder.IsConfigured)
         //            {
         //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-        //                optionsBuilder.UseSqlServer(@"Server=localhost\SQLEXPRESS; Database=Weather; Trusted_Connection=True; User ID=sa;Password=2ooixuui;");
+        //                optionsBuilder.UseSqlServer(@"Server=localhost\SQLEXPRESS; Database=Weather;Trusted_Connection=True; User ID=sa;Password=2ooixuui;");
         //            }
         //        }
+
         public WeatherContext(DbContextOptions<WeatherContext> options) : base(options)
-        { }
+        {
+
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -34,6 +39,31 @@ namespace FarmerAPI.Models
                 entity.Property(e => e.Id).ValueGeneratedNever();
 
                 entity.Property(e => e.Name).HasMaxLength(10);
+            });
+
+            modelBuilder.Entity<ImemRole>(entity =>
+            {
+                entity.HasKey(e => new { e.Account, e.RoleId });
+
+                entity.ToTable("IMemRole");
+
+                entity.Property(e => e.Account)
+                    .HasMaxLength(30)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.RoleId).HasColumnName("RoleID");
+
+                entity.HasOne(d => d.AccountNavigation)
+                    .WithMany(p => p.ImemRole)
+                    .HasForeignKey(d => d.Account)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_IMemRole_Member");
+
+                entity.HasOne(d => d.Role)
+                    .WithMany(p => p.ImemRole)
+                    .HasForeignKey(d => d.RoleId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_IMemRole_RoleGroup");
             });
 
             modelBuilder.Entity<ImenuRole>(entity =>
@@ -45,17 +75,30 @@ namespace FarmerAPI.Models
                 entity.Property(e => e.MenuId).HasColumnName("MenuID");
 
                 entity.Property(e => e.RoleId).HasColumnName("RoleID");
+
+                entity.HasOne(d => d.Menu)
+                    .WithMany(p => p.ImenuRole)
+                    .HasForeignKey(d => d.MenuId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_IMenuRole_Menu");
+
+                entity.HasOne(d => d.Role)
+                    .WithMany(p => p.ImenuRole)
+                    .HasForeignKey(d => d.RoleId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_IMenuRole_RoleGroup");
             });
 
             modelBuilder.Entity<Member>(entity =>
             {
-                entity.HasKey(e => e.MemId);
+                entity.HasKey(e => e.Account);
 
-                entity.Property(e => e.MemId)
-                    .HasColumnName("MemID")
-                    .HasMaxLength(20)
+                entity.Property(e => e.Account)
+                    .HasMaxLength(30)
                     .IsUnicode(false)
                     .ValueGeneratedNever();
+
+                entity.Property(e => e.AddTime).HasColumnType("datetime");
 
                 entity.Property(e => e.DeptId)
                     .HasColumnName("DeptID")
@@ -64,13 +107,17 @@ namespace FarmerAPI.Models
 
                 entity.Property(e => e.Domain).HasMaxLength(50);
 
-                entity.Property(e => e.MemPw)
-                    .HasColumnName("MemPW")
-                    .HasMaxLength(50);
+                entity.Property(e => e.Email).HasMaxLength(50);
 
-                entity.Property(e => e.Name)
+                entity.Property(e => e.FirstName)
                     .IsRequired()
                     .HasMaxLength(20);
+
+                entity.Property(e => e.LastName).HasMaxLength(20);
+
+                entity.Property(e => e.Password).HasMaxLength(50);
+
+                entity.Property(e => e.UpdatedTime).HasColumnType("datetime");
             });
 
             modelBuilder.Entity<Menu>(entity =>
@@ -82,6 +129,10 @@ namespace FarmerAPI.Models
                 entity.Property(e => e.Component).HasMaxLength(50);
 
                 entity.Property(e => e.MenuText)
+                    .IsRequired()
+                    .HasMaxLength(20);
+
+                entity.Property(e => e.Path)
                     .IsRequired()
                     .HasMaxLength(20);
 
@@ -120,24 +171,24 @@ namespace FarmerAPI.Models
 
             modelBuilder.Entity<StationInfo>(entity =>
             {
-                entity.HasKey(e => e.Num);
-
-                entity.Property(e => e.Num).ValueGeneratedNever();
+                entity.Property(e => e.Address).HasMaxLength(100);
 
                 entity.Property(e => e.Name).HasMaxLength(10);
 
-                entity.HasOne(d => d.NumNavigation)
-                    .WithOne(p => p.InverseNumNavigation)
-                    .HasForeignKey<StationInfo>(d => d.Num)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_StationInfo_StationInfo");
+                entity.HasOne(d => d.City)
+                    .WithMany(p => p.StationInfo)
+                    .HasForeignKey(d => d.CityId)
+                    .HasConstraintName("FK_StationInfo_City");
             });
 
             modelBuilder.Entity<SystemLog>(entity =>
             {
                 entity.HasKey(e => e.Num);
 
-                entity.Property(e => e.Num).ValueGeneratedNever();
+                entity.Property(e => e.Account)
+                    .IsRequired()
+                    .HasMaxLength(30)
+                    .IsUnicode(false);
 
                 entity.Property(e => e.Action)
                     .HasMaxLength(50)
@@ -145,14 +196,48 @@ namespace FarmerAPI.Models
 
                 entity.Property(e => e.Detail).HasColumnType("ntext");
 
-                entity.Property(e => e.Domain).HasMaxLength(50);
+                entity.Property(e => e.Ip)
+                    .HasColumnName("IP")
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
 
                 entity.Property(e => e.LogTime).HasColumnType("datetime");
 
-                entity.Property(e => e.UserId)
-                    .HasColumnName("UserID")
-                    .HasMaxLength(20)
+                entity.HasOne(d => d.AccountNavigation)
+                    .WithMany(p => p.SystemLog)
+                    .HasForeignKey(d => d.Account)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_SystemLog_Member");
+            });
+
+            modelBuilder.Entity<Token>(entity =>
+            {
+                entity.HasKey(e => e.Account);
+
+                entity.Property(e => e.Account)
+                    .HasMaxLength(30)
+                    .IsUnicode(false)
+                    .ValueGeneratedNever();
+
+                entity.Property(e => e.AuthTime).HasColumnType("datetime");
+
+                entity.Property(e => e.ExpiredTime).HasColumnType("datetime");
+
+                entity.Property(e => e.Ip)
+                    .HasColumnName("IP")
+                    .HasMaxLength(30)
                     .IsUnicode(false);
+
+                entity.Property(e => e.TokenCode)
+                    .IsRequired()
+                    .HasMaxLength(300)
+                    .IsUnicode(false);
+
+                entity.HasOne(d => d.AccountNavigation)
+                    .WithOne(p => p.Token)
+                    .HasForeignKey<Token>(d => d.Account)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Token_Member");
             });
 
             modelBuilder.Entity<WeatherData>(entity =>

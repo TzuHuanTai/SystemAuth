@@ -11,16 +11,16 @@ using Microsoft.AspNetCore.Cors;
 namespace FarmerAPI.Controllers
 {
     [Route("api/[controller]")]
-    public class MenuController : Controller
+    public class SystemController : Controller
     {
         private readonly WeatherContext _context;
-        public MenuController(WeatherContext context)
+        public SystemController(WeatherContext context)
         {
             _context = context;
         }
 
         [HttpGet("[action]/{RoleId}")]
-        public IEnumerable<vmMenu>  Menu(int RoleId)
+        public IEnumerable<vmMenu>  GetAllowedMenu(int RoleId = 2)
         {
             List<int> AllowedMenuId = _context.ImenuRole.Where(x => x.RoleId == RoleId).Select(x => x.MenuId).ToList();
             IEnumerable<Menu> FilteredMenu = _context.Menu.Where(x => AllowedMenuId.Contains(x.MenuId));
@@ -31,6 +31,7 @@ namespace FarmerAPI.Controllers
             {
                 ReturnMenu.Add(new vmMenu
                 {
+                    Path = data.Path,
                     MenuText = data.MenuText,
                     Component = data.Component
                 });

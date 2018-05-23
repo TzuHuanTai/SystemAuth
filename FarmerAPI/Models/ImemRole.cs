@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 namespace FarmerAPI.Models
 {
-    public partial class ImenuRole
+    public partial class ImemRole
     {
-        public int MenuId { get; set; }
+        public string Account { get; set; }
         public int RoleId { get; set; }
 
-        public Menu Menu { get; set; }
+        public Member AccountNavigation { get; set; }
         public RoleGroup Role { get; set; }
     }
 }

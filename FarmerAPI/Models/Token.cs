@@ -3,13 +3,12 @@ using System.Collections.Generic;
 
 namespace FarmerAPI.Models
 {
-    public partial class SystemLog
+    public partial class Token
     {
-        public long Num { get; set; }
-        public DateTime LogTime { get; set; }
         public string Account { get; set; }
-        public string Action { get; set; }
-        public string Detail { get; set; }
+        public DateTime? AuthTime { get; set; }
+        public DateTime? ExpiredTime { get; set; }
+        public string TokenCode { get; set; }
         public string Ip { get; set; }
 
         public Member AccountNavigation { get; set; }

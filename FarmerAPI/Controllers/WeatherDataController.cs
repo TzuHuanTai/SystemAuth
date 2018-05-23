@@ -9,6 +9,7 @@ using FarmerAPI.ViewModels;
 
 namespace FarmerWeb.Controllers
 {
+    
     //[Produces("application/json")]
     [Route("api/[controller]")]
     public class WeatherDataController : Controller
@@ -18,7 +19,7 @@ namespace FarmerWeb.Controllers
         {
             _context = context;
         }
-
+                
         [HttpGet("[action]")]
         public IEnumerable<vmWeatherTemperature> Temperatures(int? StationId = 1, int SearchNum = 10000)
         {
@@ -69,7 +70,7 @@ namespace FarmerWeb.Controllers
             {
                 ReturnStations.Add(new vmWeatherStation
                 {
-                    StationId = data.Num,
+                    StationId = data.Id,
                     StationName = data.Name
                 });
             };
