@@ -130,7 +130,7 @@ namespace FarmerAPI.ViewModels
 
         public const string Id = "id";
         public const string IdentityProvider = "idp";
-        public const string Role = "role";
+        public const string RoleId = "roleId";
         public const string ReferenceTokenId = "reference_token_id";
     }
 }

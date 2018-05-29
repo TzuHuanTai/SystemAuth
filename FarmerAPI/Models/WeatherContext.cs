@@ -6,7 +6,10 @@ namespace FarmerAPI.Models
 {
     public partial class WeatherContext : DbContext
     {
+        public virtual DbSet<Actions> Actions { get; set; }
         public virtual DbSet<City> City { get; set; }
+        public virtual DbSet<Controllers> Controllers { get; set; }
+        public virtual DbSet<IactionAllowed> IactionAllowed { get; set; }
         public virtual DbSet<ImemRole> ImemRole { get; set; }
         public virtual DbSet<ImenuRole> ImenuRole { get; set; }
         public virtual DbSet<Member> Member { get; set; }
@@ -23,22 +26,76 @@ namespace FarmerAPI.Models
         //            if (!optionsBuilder.IsConfigured)
         //            {
         //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-        //                optionsBuilder.UseSqlServer(@"Server=localhost\SQLEXPRESS; Database=Weather;Trusted_Connection=True; User ID=sa;Password=2ooixuui;");
+        //                optionsBuilder.UseSqlServer(@"Server=localhost\SQLEXPRESS; Database=Weather; Trusted_Connection=True; User ID=sa;Password=2ooixuui;");
         //            }
         //        }
 
         public WeatherContext(DbContextOptions<WeatherContext> options) : base(options)
         {
-
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Actions>(entity =>
+            {
+                entity.HasKey(e => e.ActionId);
+
+                entity.Property(e => e.ActionName)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Description)
+                    .HasMaxLength(500)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Method)
+                    .IsRequired()
+                    .HasMaxLength(10)
+                    .IsUnicode(false);
+
+                entity.HasOne(d => d.Controller)
+                    .WithMany(p => p.Actions)
+                    .HasForeignKey(d => d.ControllerId)
+                    .HasConstraintName("FK_Action_Controller");
+            });
+
             modelBuilder.Entity<City>(entity =>
             {
                 entity.Property(e => e.Id).ValueGeneratedNever();
 
                 entity.Property(e => e.Name).HasMaxLength(10);
+            });
+
+            modelBuilder.Entity<Controllers>(entity =>
+            {
+                entity.Property(e => e.ControllerName)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Description)
+                    .HasMaxLength(500)
+                    .IsUnicode(false);
+            });
+
+            modelBuilder.Entity<IactionAllowed>(entity =>
+            {
+                entity.HasKey(e => new { e.ActionId, e.RoleId });
+
+                entity.ToTable("IActionAllowed");
+
+                entity.HasOne(d => d.Action)
+                    .WithMany(p => p.IactionAllowed)
+                    .HasForeignKey(d => d.ActionId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_IActionAllowed_Action");
+
+                entity.HasOne(d => d.Role)
+                    .WithMany(p => p.IactionAllowed)
+                    .HasForeignKey(d => d.RoleId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_IActionAllowed_RoleGroup");
             });
 
             modelBuilder.Entity<ImemRole>(entity =>

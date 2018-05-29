@@ -35,25 +35,14 @@ namespace FarmerAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //註冊認證，讓所有API Method可做權限控管
-            services.AddMvc(Configuration =>
-            {
-                //AuthorizationPolicy policy = new AuthorizationPolicyBuilder()
-                //                .RequireAuthenticatedUser()
-                //                .Build();
-                //Configuration.Filters.Add(new AuthorizeFilter(policy));
-
-                //全域註冊Filter，靠AuthorizationFilter驗證身分權限                
-                //Configuration.Filters.Add(new AuthorizationFilter())          
-            });
-
-            //----驗證(AddAuthentication)，設定Json Web Token----//
+            //----驗證(AddAuthentication)Json Web Token----//
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options => 
             {
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     NameClaimType = JwtClaimTypes.Id,
-                    RoleClaimType = JwtClaimTypes.Role,
+                    RoleClaimType = JwtClaimTypes.RoleId,
+                    //RoleClaimType = System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Actort,
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidateLifetime = true,
@@ -62,29 +51,17 @@ namespace FarmerAPI
                     ValidAudience = Configuration["Jwt:Audience"], //Token頒發給誰
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"])) //Token簽名祕鑰
                 };
+                //必要時可使用事件do something
                 //options.Events = new JwtBearerEvents()
                 //{
-                //    OnTokenValidated  =>
+                //    OnTokenValidated = context =>
                 //    {
-
+                //        context.HttpContext.User.Claims();
                 //    }
-                //}
+                //};
             });
 
-            //權限(AddAuthorization)，設定Attribute放在Action上做篩選
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("AdministratorUser", policy => {
-                    policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
-                    policy.RequireAuthenticatedUser();
-                    policy.RequireClaim(JwtClaimTypes.Role, "1");
-                });
-                //options.AddPolicy("GeneralUser", policy => policy.RequireClaim(JwtClaimTypes.Role, "2"));
-            });
-
-           
-
-            //----抓client IP需要註冊此功能----//
+            //----抓封包資訊、client IP需要註冊HttpContext功能----//
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             //----連接DB，原本ConnectString移到appsettings.json----//
@@ -184,6 +161,35 @@ namespace FarmerAPI
                 options.Filters.Add(new CorsAuthorizationFilterFactory("AllowAllOrigins"));
             });
 
+            //----權限(AddAuthorization)，設定Attribute放在Action上做篩選----//
+            //services.AddAuthorization(options =>
+            //{
+            //    options.AddPolicy("AdministratorUser", policy => {
+            //        policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
+            //        policy.RequireAuthenticatedUser();
+            //        policy.RequireClaim(JwtClaimTypes.Role, "1");
+            //    });
+            //    //options.AddPolicy("GeneralUser", policy => policy.RequireClaim(JwtClaimTypes.Role, "2"));
+            //});    
+            //註冊認證，讓所有API Method可做權限控管
+            services.AddMvc(Configuration =>
+            {
+                //AuthorizationPolicy policy = new AuthorizationPolicyBuilder()
+                //                .RequireAuthenticatedUser()
+                //                .Build();
+                //Configuration.Filters.Add(new AuthorizeFilter(policy));
+
+                //全域註冊Filter，靠AuthorizationFilter驗證身分權限                
+                //Configuration.Filters.Add(new AuthorizationFilter());
+
+                //再全域註冊Filter，ServiceFilterAttribute方式會被解析要用dependency injection，這樣就可在filter使用db功能
+                Configuration.Filters.Add(new ServiceFilterAttribute(typeof(AuthorizationFilter)));
+            });
+
+            //----Filter----//
+            //註冊，若只註冊需自行在controll加上標籤[ServiceFilter(typeof(AuthorizationFilter))]
+            //services.AddSingleton<AuthorizationFilter>(); //failed: AddSingleton呼叫不會new, AddTransient、AddScoped呼叫方式會new
+            services.AddScoped<AuthorizationFilter>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -199,10 +205,10 @@ namespace FarmerAPI
 
             //----需要驗證JWT權限----//
             app.UseAuthentication();
-
             
             //----個別Controller註冊Middleware Filter，驗證身分權限----//
             //app.UseMiddleware<xxxxFilter>();
+            //app.UseMiddleware<>
 
             //----請求進入MVC，放在所有流程最後面----//
             app.UseMvc();            

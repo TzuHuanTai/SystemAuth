@@ -7,6 +7,7 @@ namespace FarmerAPI.Models
     {
         public RoleGroup()
         {
+            IactionAllowed = new HashSet<IactionAllowed>();
             ImemRole = new HashSet<ImemRole>();
             ImenuRole = new HashSet<ImenuRole>();
         }
@@ -23,6 +24,7 @@ namespace FarmerAPI.Models
         public bool PassScope { get; set; }
         public bool PrintScope { get; set; }
 
+        public ICollection<IactionAllowed> IactionAllowed { get; set; }
         public ICollection<ImemRole> ImemRole { get; set; }
         public ICollection<ImenuRole> ImenuRole { get; set; }
     }

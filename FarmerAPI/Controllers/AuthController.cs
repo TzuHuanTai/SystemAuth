@@ -23,7 +23,7 @@ namespace FarmerAPI.Controllers
     {
         private IConfiguration _config;
         private readonly WeatherContext _context;
-        private IHttpContextAccessor _accessor;
+        private readonly IHttpContextAccessor _accessor;
         
         public AuthController(IConfiguration config, WeatherContext context, IHttpContextAccessor accessor)
         {
@@ -31,8 +31,7 @@ namespace FarmerAPI.Controllers
             _context = context;
             _accessor = accessor;
         }
-
-        [AllowAnonymous]
+               
         [HttpPost("[action]")]
         public async Task<IActionResult> Authenticate(string Account, string Password)
         {
@@ -53,7 +52,7 @@ namespace FarmerAPI.Controllers
                         new Claim(JwtClaimTypes.Audience, _config["Jwt:Audience"]),
                         new Claim(JwtClaimTypes.Issuer, _config["Jwt:Issuer"]),
                         new Claim(JwtClaimTypes.Id, Account),
-                        new Claim(JwtClaimTypes.Role, "2"),
+                        new Claim(JwtClaimTypes.RoleId, RoleID.ToString()),
                         //new Claim(JwtClaimTypes.Email, user.Email),
                         //new Claim(JwtClaimTypes.PhoneNumber, user.PhoneNumber)
                     }),

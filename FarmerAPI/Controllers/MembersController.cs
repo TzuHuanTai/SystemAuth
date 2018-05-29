@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using FarmerAPI.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using FarmerAPI.Extensions;
+using FarmerAPI.Filters;
 
 namespace FarmerAPI.Controllers
 {
@@ -16,17 +18,20 @@ namespace FarmerAPI.Controllers
     public class MembersController : Controller
     {
         private readonly WeatherContext _context;
+        //private readonly int _accessorUser;
 
-        public MembersController(WeatherContext context)
+        public MembersController(WeatherContext context, IHttpContextAccessor accessor)
         {
             _context = context;
+            //_accessorUser = accessor.CurrentUser();
         }
 
         // GET: api/Members
         //[FarmerAPI.Filters.AuthorizationFilter]
         //[Authorize]
         //[Authorize(Policy = "AdministratorUser")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        //[ServiceFilter(typeof(AuthorizationFilter))]
         [HttpGet("[action]")]
         public IEnumerable<Member> GetMember()
         {
@@ -34,7 +39,7 @@ namespace FarmerAPI.Controllers
         }
 
         //api/Members/GetToken
-        [AllowAnonymous]
+        //[AllowAnonymous]
         [HttpGet("[action]")]
         public string GetToken(string Account)
         {

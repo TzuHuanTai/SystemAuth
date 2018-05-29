@@ -8,6 +8,7 @@ using FarmerAPI.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Cors;
 using FarmerAPI.Filters;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FarmerAPI.Controllers
 {    
@@ -97,7 +98,7 @@ namespace FarmerAPI.Controllers
             }
         }
 
-        // GET api/values
+        // GET api/values       
         [HttpGet]
         public IEnumerable<string> Get()
         {
