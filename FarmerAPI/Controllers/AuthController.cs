@@ -33,10 +33,10 @@ namespace FarmerAPI.Controllers
         }
                
         [HttpPost("[action]")]
-        public async Task<IActionResult> Authenticate(string Account, string Password)
+        public async Task<IActionResult> Authenticate([FromBody]AuthRequest AuthRequest) //, string Account, string Password
         {
-            bool HasUser = _context.FindUser(Account, Password);
-            bool HasToken = _context.FindToken(Account);
+            bool HasUser = _context.FindUser(AuthRequest.Account, AuthRequest.Password);
+            bool HasToken = _context.FindToken(AuthRequest.Account);
             
             if (HasUser)
             {
@@ -44,14 +44,14 @@ namespace FarmerAPI.Controllers
                 var key = Encoding.ASCII.GetBytes(_config["Jwt:Key"]);
                 var authTime = DateTime.UtcNow.ToLocalTime();//ToLocalTime變UTC+8時區
                 var expiresAt = authTime.AddDays(7);
-                int RoleID = _context.ImemRole.Where(y => y.Account == Account).Select(x => x.RoleId).First();
+                int RoleID = _context.ImemRole.Where(y => y.Account == AuthRequest.Account).Select(x => x.RoleId).First();
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {
                     Subject = new ClaimsIdentity(new Claim[]
                     {
                         new Claim(JwtClaimTypes.Audience, _config["Jwt:Audience"]),
                         new Claim(JwtClaimTypes.Issuer, _config["Jwt:Issuer"]),
-                        new Claim(JwtClaimTypes.Id, Account),
+                        new Claim(JwtClaimTypes.Id, AuthRequest.Account),
                         new Claim(JwtClaimTypes.RoleId, RoleID.ToString()),
                         //new Claim(JwtClaimTypes.Email, user.Email),
                         //new Claim(JwtClaimTypes.PhoneNumber, user.PhoneNumber)
@@ -72,7 +72,7 @@ namespace FarmerAPI.Controllers
                 {
                     Token SaveInfo = new Token
                     {
-                        Account = Account,
+                        Account = AuthRequest.Account,
                         TokenCode = tokenString,
                         AuthTime = authTime,
                         ExpiredTime = expiresAt,
@@ -82,7 +82,7 @@ namespace FarmerAPI.Controllers
                     if (HasToken)
                     {
                         //若過去已有建立過Token，刷新資料
-                        Token existInfo = _context.Token.Where(x => x.Account == Account).FirstOrDefault();
+                        Token existInfo = _context.Token.Where(x => x.Account == AuthRequest.Account).FirstOrDefault();
                         _context.Entry(existInfo).State = EntityState.Modified;
                         _context.Entry(existInfo).CurrentValues.SetValues(SaveInfo);
                     }
@@ -94,7 +94,7 @@ namespace FarmerAPI.Controllers
                     //紀錄System Log
                     _context.SystemLog.Add(new SystemLog {
                         LogTime = authTime,
-                        Account = Account,
+                        Account = AuthRequest.Account,
                         Action = ControllerContext.ActionDescriptor.ActionName,
                         Detail = "Success to Authorize and make a token",
                         Ip = _accessor.HttpContext.Connection.RemoteIpAddress.ToString()
@@ -126,7 +126,7 @@ namespace FarmerAPI.Controllers
                 _context.SystemLog.Add(new SystemLog
                 {
                     LogTime = DateTime.Now,
-                    Account = Account,
+                    Account = AuthRequest.Account,
                     Action = ControllerContext.ActionDescriptor.ActionName,
                     Detail = "Failure to authorize ",
                     Ip = _accessor.HttpContext.Connection.RemoteIpAddress.ToString()

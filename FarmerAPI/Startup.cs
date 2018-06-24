@@ -47,11 +47,11 @@ namespace FarmerAPI
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = Configuration["Jwt:Issuer"], //Token頒發機構
-                    ValidAudience = Configuration["Jwt:Audience"], //Token頒發給誰
+                    ValidIssuer = Configuration["Jwt:Issuer"],      //Token頒發機構
+                    ValidAudience = Configuration["Jwt:Audience"],  //Token頒發給誰
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"])) //Token簽名祕鑰
                 };
-                //必要時可使用事件do something
+                #region 必要時可使用事件do something
                 //options.Events = new JwtBearerEvents()
                 //{
                 //    OnTokenValidated = context =>
@@ -59,6 +59,7 @@ namespace FarmerAPI
                 //        context.HttpContext.User.Claims();
                 //    }
                 //};
+                #endregion
             });
 
             //----抓封包資訊、client IP需要註冊HttpContext功能----//
@@ -188,7 +189,7 @@ namespace FarmerAPI
 
             //----Filter----//
             //註冊，若只註冊需自行在controll加上標籤[ServiceFilter(typeof(AuthorizationFilter))]
-            //services.AddSingleton<AuthorizationFilter>(); //failed: AddSingleton呼叫不會new, AddTransient、AddScoped呼叫方式會new
+            //AddSingleto failed: AddSingleton呼叫不會new, AddTransient、AddScoped呼叫方式會new
             services.AddScoped<AuthorizationFilter>();
         }
 

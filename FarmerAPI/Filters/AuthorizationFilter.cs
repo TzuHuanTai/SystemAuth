@@ -12,11 +12,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Configuration;
 using FarmerAPI.Extensions;
 
-
-/* 20180529 @Richard
- * 主旨：
- * 統一在Startup.cs AddMvc中全域注入此Filter功能是為了達到要"動態"判斷，可判斷Request是否有權限。
- * 
+/* 20180529 @Richard 統一在Startup.cs AddMvc中全域注入此Filter功能是為了達到要"動態"判斷，可判斷Request是否有權限。
  * 說明：
  * 因有注入AddAuthentication服務判斷jwt，而又在app.UseAuthentication()要求Request進入MVC前都要要判斷jwt，
  * 所以加上標籤[AllowAnonymous]或[Authrize]就會自動判讀可否使用該Action。
@@ -26,6 +22,7 @@ using FarmerAPI.Extensions;
  * 所以來此Filter時，jwt已被app.UseAuthentication()判斷過了，可直接抓jwt判讀結果再依角色做Action權限控管。
  * 因此所有Action上面都不用加標籤，統一在這Filter就判斷好了！
  */
+
 namespace FarmerAPI.Filters
 {
     public class AuthorizationFilter: Attribute,IAuthorizationFilter
@@ -42,10 +39,10 @@ namespace FarmerAPI.Filters
         public void OnAuthorization(AuthorizationFilterContext context)
         {
             //----取得參數判斷user是否有權限使用Action----//
-            string authHeader = context.HttpContext.Request.Headers["Authorization"];            
-            int userRole = context.CurrentUserRole();       //無jwt或偽造讀出userRole = 0
-            string userAccount = context.CurrentUserId();   //無jwt或偽造讀出userAccount = null
+            int userRole = context.CurrentUserRole();       //無jwt或偽造時，讀出userRole = 0
+            string userAccount = context.CurrentUserId();   //無jwt或偽造時，讀出userAccount = null
             string accessAction = context.CurrentAction();
+            string authHeader = context.HttpContext.Request.Headers["Authorization"];
 
             if (authHeader != null && authHeader.StartsWith("Bearer", true, CultureInfo.CurrentCulture))
             {
