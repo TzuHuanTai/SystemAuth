@@ -41,7 +41,7 @@ namespace FarmerAPI.Filters
             //----取得參數判斷user是否有權限使用Action----//
             int userRole = context.CurrentUserRole();       //無jwt或偽造時，讀出userRole = 0
             string userAccount = context.CurrentUserId();   //無jwt或偽造時，讀出userAccount = null
-            string accessAction = context.CurrentAction();
+            string accessAction = context.CurrentAction();  //取得呼叫的Action名稱
             string authHeader = context.HttpContext.Request.Headers["Authorization"];
 
             if (authHeader != null && authHeader.StartsWith("Bearer", true, CultureInfo.CurrentCulture))
@@ -100,12 +100,13 @@ namespace FarmerAPI.Filters
             context.Result = new UnauthorizedResult();
         }      
               
-
+        //檢查使用者是否有該角色
         public bool HasUserRole(string username, int userRole)
         {
             return _context.ImemRole.Any(x => x.Account == username && x.RoleId == userRole);
         }
 
+        //檢查使用者是否有權限執行該Action
         public bool HasAllowedAction(int userRole, string action)
         {
             return _context.Actions.Any(x =>

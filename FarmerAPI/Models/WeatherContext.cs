@@ -34,6 +34,10 @@ namespace FarmerAPI.Models
         {
         }
 
+        public WeatherContext()
+        {
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Actions>(entity =>

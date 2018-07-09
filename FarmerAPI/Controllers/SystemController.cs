@@ -17,11 +17,13 @@ namespace FarmerAPI.Controllers
     {
         private readonly WeatherContext _context;
         private readonly IHttpContextAccessor _accessor;
+        private readonly SystemStructureContext _contextSys;
 
-        public SystemController(WeatherContext context, IHttpContextAccessor accessor)
+        public SystemController(WeatherContext context, IHttpContextAccessor accessor, SystemStructureContext contextSys)
         {
             _context = context;
             _accessor = accessor;
+            _contextSys = contextSys;
         }
 
         [HttpGet("[action]")]
@@ -46,6 +48,69 @@ namespace FarmerAPI.Controllers
             return ReturnMenu;
         }
 
+        [HttpGet("[action]")]
+        public IEnumerable<VwTest> Test(int index = 2)
+        {
+            List<Test> ReturnSomethings = new List<Test>();
+            List<VwTest> ReturnJoin2DB = new List<VwTest>();
+            if (index == 0) //inner
+            {
+                ReturnSomethings = _context.Menu.Join(
+                _context.ImenuRole,
+                a => a.MenuId,
+                b => b.MenuId,
+                (a, b) => new Test { Path = a.Path, MenuText = a.MenuText, Component = a.Component, RoleId = b.RoleId }).ToList();
+            }
+            else if (index == 1) //left or right (outter)
+            {
+                ReturnSomethings = _context.Menu.GroupJoin(
+                _context.ImenuRole,
+                a => a.MenuId,
+                b => b.MenuId,
+                (a, joinT) => new  { Path = a.Path, MenuText = a.MenuText, Component = a.Component, joinTable = joinT })
+                .SelectMany(sub=>sub.joinTable.DefaultIfEmpty(), (sub,b)=>new Test { Path = sub.Path, MenuText = sub.MenuText, Component = sub.Component, RoleId = b.RoleId })
+                .ToList();
+            }
+            else if(index == 2)
+            {
+                //ReturnJoin2DB = _contextSys.TestTable.Join(
+                //_context.Actions.Where(x=>x.ActionId>=3),
+                //a => a.TestPk,
+                //b => b.ActionId,
+                //(a, b) => new Test2DB
+                //{
+                //    TestPk = a.TestPk,
+                //    Test1 = (a.Test1 ?? "0"),
+                //    Test2 = (a.Test2 ?? "0"),
+                //    ActionName = (b.ActionName ?? "0")
+                //}).ToList();
+                //var TestFromSql1 = _contextSys.Set<Test2DB>().
+                //    FromSql(
+                //    "select b.TestPK, b.Test1, b.Test2, a.ActionName " +
+                //    "from  [Weather].[dbo].[Actions] a join " +
+                //    "[SystemStructure].[dbo].[TestTable] b " +
+                //    "on a.ActionId=b.TestPK"
+                //    ).ToList();
+
+                var TestFromSql2 = _contextSys.Set<VwTest>().
+                    FromSql(
+                    "select top(2)* from dbo.VwTest"
+                    ).ToList();
+
+                return TestFromSql2;
+            }
+
+
+
+            //_context.Database.ExecuteSqlCommand("");
+
+            string aaa = _contextSys.TestTable.Select(x => x.Test2).First();
+            string bbb = _context.StationInfo.Select(x => x.Name).First();
+            //_context.Set().FromSql()
+            //return new string[] { aaa, bbb };
+            return ReturnJoin2DB;
+        }
+
         //children會有很多menu因此屬性為List<vmMenu>，所以必須回傳List<vmMenu>才可跑遞迴
         private List<vmMenu> TreeMenu(Menu Root, IEnumerable<Menu> AllMenu)
         {
@@ -67,7 +132,7 @@ namespace FarmerAPI.Controllers
                     List<vmMenu> Node = TreeMenu(item, AllMenu);
                     TreeRoot.Children.Add(Node[0]);
                 };                
-            }           
+            } 
 
             ReturnTreeMenu.Add(TreeRoot);
 
