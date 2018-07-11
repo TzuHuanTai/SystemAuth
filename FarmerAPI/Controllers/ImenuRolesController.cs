@@ -18,7 +18,7 @@ namespace FarmerAPI.Controllers
         public ImenuRolesController(WeatherContext context)
         {
             _context = context;
-        }
+        }                
 
         // GET: api/ImenuRoles
         [HttpGet]
