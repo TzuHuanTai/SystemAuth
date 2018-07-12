@@ -46,41 +46,6 @@ namespace FarmerAPI.Controllers
             return Ok(imenuRole);
         }
 
-        // PUT: api/ImenuRoles/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutImenuRole([FromRoute] int id, [FromBody] ImenuRole imenuRole)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (id != imenuRole.MenuId)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(imenuRole).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ImenuRoleExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
         // POST: api/ImenuRoles
         [HttpPost]
         public async Task<IActionResult> PostImenuRole([FromBody] ImenuRole imenuRole)
@@ -97,7 +62,7 @@ namespace FarmerAPI.Controllers
             }
             catch (DbUpdateException)
             {
-                if (ImenuRoleExists(imenuRole.MenuId))
+                if (ImenuRoleExists(imenuRole.MenuId, imenuRole.RoleId))
                 {
                     return new StatusCodeResult(StatusCodes.Status409Conflict);
                 }
@@ -111,15 +76,16 @@ namespace FarmerAPI.Controllers
         }
 
         // DELETE: api/ImenuRoles/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteImenuRole([FromRoute] int id)
+        [HttpDelete("{MenuId}/{RoleId}")]
+        public async Task<IActionResult> DeleteImenuRole([FromRoute] int MenuId, [FromRoute] int RoleId)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var imenuRole = await _context.ImenuRole.SingleOrDefaultAsync(m => m.MenuId == id);
+            //ImenuRole是雙主鍵！兩個pk都要判斷！
+            var imenuRole = await _context.ImenuRole.SingleOrDefaultAsync(m => m.MenuId == MenuId && m.RoleId == RoleId);
             if (imenuRole == null)
             {
                 return NotFound();
@@ -131,9 +97,10 @@ namespace FarmerAPI.Controllers
             return Ok(imenuRole);
         }
 
-        private bool ImenuRoleExists(int id)
+        private bool ImenuRoleExists(int MenuId, int RoleId)
         {
-            return _context.ImenuRole.Any(e => e.MenuId == id);
+            //ImenuRole是雙主鍵！兩個pk都要判斷！
+            return _context.ImenuRole.Any(e => e.MenuId == MenuId && e.RoleId == RoleId);
         }
     }
 }
