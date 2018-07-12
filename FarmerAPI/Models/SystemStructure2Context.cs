@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace FarmerAPI.Models
 {
-    public partial class SystemStructureContext : DbContext
-    {        
-        public virtual DbSet<TestTable> TestTable { get; set; }
+    public partial class SystemStructure2Context : DbContext
+    {
+        public virtual DbSet<Test2Db> Test2Db { get; set; }        
         public virtual DbSet<VwTest> VwTest { get; set; }
 
         //        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -18,7 +18,7 @@ namespace FarmerAPI.Models
         //            }
         //        }
 
-        public SystemStructureContext(DbContextOptions<SystemStructureContext> options) : base(options)
+        public SystemStructure2Context(DbContextOptions<SystemStructure2Context> options) : base(options)
         {
 
         }
@@ -30,20 +30,26 @@ namespace FarmerAPI.Models
                 entity.HasKey(e => e.TestPk);
             });
 
-            modelBuilder.Entity<TestTable>(entity =>
+            modelBuilder.Entity<Test2Db>(entity =>
             {
                 entity.HasKey(e => e.TestPk);
+
+                entity.ToTable("Test2DB");
 
                 entity.Property(e => e.TestPk)
                     .HasColumnName("TestPK")
                     .ValueGeneratedNever();
 
-                entity.Property(e => e.Test1).HasColumnType("nchar(10)");
-
-                entity.Property(e => e.Test2)
+                entity.Property(e => e.ActionName)
                     .HasMaxLength(50)
                     .IsUnicode(false);
+
+                entity.Property(e => e.Test1).HasColumnType("nchar(10)");
+
+                entity.Property(e => e.Test2).HasColumnType("nchar(10)");
             });
+
+            
         }
     }
 }

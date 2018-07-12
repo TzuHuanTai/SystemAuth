@@ -18,12 +18,14 @@ namespace FarmerAPI.Controllers
         private readonly WeatherContext _context;
         private readonly IHttpContextAccessor _accessor;
         private readonly SystemStructureContext _contextSys;
+        private readonly SystemStructure2Context _contextSys2;
 
-        public SystemController(WeatherContext context, IHttpContextAccessor accessor, SystemStructureContext contextSys)
+        public SystemController(WeatherContext context, IHttpContextAccessor accessor, SystemStructureContext contextSys, SystemStructure2Context contextSys2)
         {
             _context = context;
             _accessor = accessor;
             _contextSys = contextSys;
+            _contextSys2 = contextSys2;
         }
 
         [HttpGet("[action]")]
@@ -49,8 +51,9 @@ namespace FarmerAPI.Controllers
         }
 
         [HttpGet("[action]")]
-        public IEnumerable<VwTest> Test(int index = 2)
+        public List<Test2Db> Test(int index = 2)
         {
+
             List<Test> ReturnSomethings = new List<Test>();
             List<VwTest> ReturnJoin2DB = new List<VwTest>();
             if (index == 0) //inner
@@ -97,7 +100,7 @@ namespace FarmerAPI.Controllers
                     "select top(2)* from dbo.VwTest"
                     ).ToList();
 
-                return TestFromSql2;
+                //return TestFromSql2;
             }
 
 
@@ -108,7 +111,17 @@ namespace FarmerAPI.Controllers
             string bbb = _context.StationInfo.Select(x => x.Name).First();
             //_context.Set().FromSql()
             //return new string[] { aaa, bbb };
-            return ReturnJoin2DB;
+            //return ReturnJoin2DB;
+
+
+
+            var database1 = _contextSys.TestTable.ToList();
+            var database2 = _contextSys2.Test2Db.Where(x =>
+                    database1.Any(y => y.TestPk == x.TestPk)
+                ).ToList();
+
+            return database2;
+
         }
 
         //children會有很多menu因此屬性為List<vmMenu>，所以必須回傳List<vmMenu>才可跑遞迴

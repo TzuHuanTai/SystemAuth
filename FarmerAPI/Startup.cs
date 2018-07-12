@@ -72,6 +72,9 @@ namespace FarmerAPI
             services.AddDbContext<SystemStructureContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("MyDB2")
             ));
+            services.AddDbContext<SystemStructure2Context>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("MyDB2")
+            ));
 
             //----加入cross-origin-request-sharing----//
             services.AddCors(options=>
