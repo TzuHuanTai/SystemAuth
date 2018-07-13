@@ -7,16 +7,16 @@ namespace FarmerAPI.Models
     {
         public Actions()
         {
-            IactionAllowed = new HashSet<IactionAllowed>();
+            IactionRole = new HashSet<IactionRole>();
         }
 
-        public int ActionId { get; set; }
-        public string ActionName { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
         public string Method { get; set; }
         public int? ControllerId { get; set; }
         public string Description { get; set; }
 
         public Controllers Controller { get; set; }
-        public ICollection<IactionAllowed> IactionAllowed { get; set; }
+        public ICollection<IactionRole> IactionRole { get; set; }
     }
 }

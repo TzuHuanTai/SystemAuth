@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace FarmerAPI.Models
 {
-    public partial class IactionAllowed
+    public partial class IactionRole
     {
         public int RoleId { get; set; }
         public int ActionId { get; set; }

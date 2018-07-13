@@ -9,7 +9,7 @@ namespace FarmerAPI.Models
         public virtual DbSet<Actions> Actions { get; set; }
         public virtual DbSet<City> City { get; set; }
         public virtual DbSet<Controllers> Controllers { get; set; }
-        public virtual DbSet<IactionAllowed> IactionAllowed { get; set; }
+        public virtual DbSet<IactionRole> IactionRole { get; set; }
         public virtual DbSet<ImemRole> ImemRole { get; set; }
         public virtual DbSet<ImenuRole> ImenuRole { get; set; }
         public virtual DbSet<Member> Member { get; set; }
@@ -42,9 +42,9 @@ namespace FarmerAPI.Models
         {
             modelBuilder.Entity<Actions>(entity =>
             {
-                entity.HasKey(e => e.ActionId);
+                entity.HasKey(e => e.Id);
 
-                entity.Property(e => e.ActionName)
+                entity.Property(e => e.Name)
                     .IsRequired()
                     .HasMaxLength(50)
                     .IsUnicode(false);
@@ -73,7 +73,7 @@ namespace FarmerAPI.Models
 
             modelBuilder.Entity<Controllers>(entity =>
             {
-                entity.Property(e => e.ControllerName)
+                entity.Property(e => e.Name)
                     .IsRequired()
                     .HasMaxLength(50)
                     .IsUnicode(false);
@@ -83,23 +83,23 @@ namespace FarmerAPI.Models
                     .IsUnicode(false);
             });
 
-            modelBuilder.Entity<IactionAllowed>(entity =>
+            modelBuilder.Entity<IactionRole>(entity =>
             {
                 entity.HasKey(e => new { e.ActionId, e.RoleId });
 
-                entity.ToTable("IActionAllowed");
+                entity.ToTable("IactionRole");
 
                 entity.HasOne(d => d.Action)
-                    .WithMany(p => p.IactionAllowed)
+                    .WithMany(p => p.IactionRole)
                     .HasForeignKey(d => d.ActionId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_IActionAllowed_Action");
+                    .HasConstraintName("FK_IActionRole_Action");
 
                 entity.HasOne(d => d.Role)
-                    .WithMany(p => p.IactionAllowed)
+                    .WithMany(p => p.IactionRole)
                     .HasForeignKey(d => d.RoleId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_IActionAllowed_RoleGroup");
+                    .HasConstraintName("FK_IActionRole_RoleGroup");
             });
 
             modelBuilder.Entity<ImemRole>(entity =>

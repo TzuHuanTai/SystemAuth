@@ -110,9 +110,9 @@ namespace FarmerAPI.Filters
         public bool HasAllowedAction(int userRole, string action)
         {
             return _context.Actions.Any(x =>
-                x.ActionName == action &&
-                x.IactionAllowed.Any(
-                    y => y.RoleId == userRole && y.ActionId == x.ActionId
+                x.Name == action &&
+                x.IactionRole.Any(
+                    y => y.RoleId == userRole && y.ActionId == x.Id
                 )
             );
         }
