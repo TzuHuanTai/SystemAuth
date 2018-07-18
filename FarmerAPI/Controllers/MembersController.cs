@@ -32,44 +32,10 @@ namespace FarmerAPI.Controllers
         //[Authorize(Policy = "AdministratorUser")]
         //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         //[ServiceFilter(typeof(AuthorizationFilter))]
-        [HttpGet("[action]")]
+        [HttpGet]
         public IEnumerable<Member> GetMember()
         {
             return _context.Member;
-        }
-
-        //api/Members/GetToken
-        //[AllowAnonymous]
-        [HttpGet("[action]")]
-        public string GetToken(string Account)
-        {
-            return "test"; //_context.Member;
-        }
-
-        // POST: api/Members
-        [HttpPost]
-        public async Task<IActionResult> Login([FromBody] Member member)
-        {
-            if(MemberExists(member.Account))
-
-            _context.Member.Add(member);
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                if (MemberExists(member.Account))
-                {
-                    return new StatusCodeResult(StatusCodes.Status409Conflict);
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return CreatedAtAction("GetMember", new { id = member.Account }, member);
         }
 
         // GET: api/Members/5
@@ -109,6 +75,7 @@ namespace FarmerAPI.Controllers
 
             try
             {
+                member.UpdatedTime = DateTime.Now;
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
@@ -134,6 +101,10 @@ namespace FarmerAPI.Controllers
             {
                 return BadRequest(ModelState);
             }
+
+            //新增、更新時間以伺服器時間為準
+            member.AddTime = DateTime.Now;
+            member.UpdatedTime = DateTime.Now;
 
             _context.Member.Add(member);
             try

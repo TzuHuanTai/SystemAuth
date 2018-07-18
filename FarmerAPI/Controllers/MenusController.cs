@@ -24,16 +24,16 @@ namespace FarmerAPI.Controllers
         [HttpGet("[action]")]
         public IEnumerable<MenuNode> GetMenuTree()
         {
-            IEnumerable<Menu> AuthMenu = _context.Menu;
+            IEnumerable<Menu> Menu = _context.Menu;
 
             List<MenuNode> ReturnMenu = new List<MenuNode>();
 
             //Menu有很多棵tree，每個tree一個root
-            foreach (Menu Root in AuthMenu.Where(x => x.RootMenuId == null))
+            foreach (Menu Root in Menu.Where(x => x.RootMenuId == null))
             {
                 //找出所有root底下的leafs
                 MenuNode RootImenu = new MenuNode() { MenuId = Root.MenuId, MenuText = Root.MenuText };
-                List<MenuNode> Tree = TreeMenu(RootImenu, AuthMenu);
+                List<MenuNode> Tree = TreeMenu(RootImenu, Menu);
 
                 //加入回傳的tree
                 ReturnMenu.Add(Tree[0]);

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace FarmerAPI.Models
 {
-    public partial class Controllers
+    public partial class Ctrl
     {
-        public Controllers()
+        public Ctrl()
         {
             Actions = new HashSet<Actions>();
         }

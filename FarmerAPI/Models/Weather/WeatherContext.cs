@@ -8,7 +8,7 @@ namespace FarmerAPI.Models
     {
         public virtual DbSet<Actions> Actions { get; set; }
         public virtual DbSet<City> City { get; set; }
-        public virtual DbSet<Controllers> Controllers { get; set; }
+        public virtual DbSet<Ctrl> Ctrl { get; set; }
         public virtual DbSet<IactionRole> IactionRole { get; set; }
         public virtual DbSet<ImemRole> ImemRole { get; set; }
         public virtual DbSet<ImenuRole> ImenuRole { get; set; }
@@ -26,15 +26,10 @@ namespace FarmerAPI.Models
         //            if (!optionsBuilder.IsConfigured)
         //            {
         //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-        //                optionsBuilder.UseSqlServer(@"Server=localhost\SQLEXPRESS; Database=Weather; Trusted_Connection=True; User ID=sa;Password=2ooixuui;");
+        //                optionsBuilder.UseSqlServer(@"Server=localhost\SQLEXPRESS; Database=Weather;Trusted_Connection=True; User ID=sa;Password=2ooixuui;");
         //            }
         //        }
-
         public WeatherContext(DbContextOptions<WeatherContext> options) : base(options)
-        {
-        }
-
-        public WeatherContext()
         {
         }
 
@@ -42,12 +37,7 @@ namespace FarmerAPI.Models
         {
             modelBuilder.Entity<Actions>(entity =>
             {
-                entity.HasKey(e => e.Id);
-
-                entity.Property(e => e.Name)
-                    .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                entity.Property(e => e.Id).ValueGeneratedNever();
 
                 entity.Property(e => e.Description)
                     .HasMaxLength(500)
@@ -58,10 +48,16 @@ namespace FarmerAPI.Models
                     .HasMaxLength(10)
                     .IsUnicode(false);
 
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+
                 entity.HasOne(d => d.Controller)
                     .WithMany(p => p.Actions)
                     .HasForeignKey(d => d.ControllerId)
-                    .HasConstraintName("FK_Action_Controller");
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Action_Ctrl");
             });
 
             modelBuilder.Entity<City>(entity =>
@@ -71,15 +67,17 @@ namespace FarmerAPI.Models
                 entity.Property(e => e.Name).HasMaxLength(10);
             });
 
-            modelBuilder.Entity<Controllers>(entity =>
+            modelBuilder.Entity<Ctrl>(entity =>
             {
-                entity.Property(e => e.Name)
-                    .IsRequired()
-                    .HasMaxLength(50)
-                    .IsUnicode(false);
+                entity.Property(e => e.Id).ValueGeneratedNever();
 
                 entity.Property(e => e.Description)
                     .HasMaxLength(500)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(50)
                     .IsUnicode(false);
             });
 
@@ -87,7 +85,7 @@ namespace FarmerAPI.Models
             {
                 entity.HasKey(e => new { e.ActionId, e.RoleId });
 
-                entity.ToTable("IactionRole");
+                entity.ToTable("IActionRole");
 
                 entity.HasOne(d => d.Action)
                     .WithMany(p => p.IactionRole)
