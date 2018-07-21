@@ -41,7 +41,7 @@ namespace FarmerAPI
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     NameClaimType = JwtClaimTypes.Id,
-                    RoleClaimType = JwtClaimTypes.RoleId,
+                    //RoleClaimType = JwtClaimTypes.RoleId, //停止在jwt加入角色資訊，統一用id(帳號)判斷
                     //RoleClaimType = System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Actort,
                     ValidateIssuer = true,
                     ValidateAudience = true,

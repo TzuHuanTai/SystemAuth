@@ -11,6 +11,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Configuration;
 using FarmerAPI.Extensions;
+using Microsoft.AspNetCore.Http.Internal;
+using System.IO;
+using Microsoft.EntityFrameworkCore;
 
 /* 20180529 @Richard 統一在Startup.cs AddMvc中全域注入此Filter功能是為了達到要"動態"判斷，可判斷Request是否有權限。
  * 說明：
@@ -39,11 +42,22 @@ namespace FarmerAPI.Filters
         public void OnAuthorization(AuthorizationFilterContext context)
         {
             //----取得參數判斷user是否有權限使用Action----//
-            int userRole = context.CurrentUserRole();       //無jwt或偽造時，讀出userRole = 0
-            string userAccount = context.CurrentUserId();   //無jwt或偽造時，讀出userAccount = null
-            string accessAction = context.CurrentAction();  //取得呼叫的Action名稱
+            List<int> userRole = new List<int>() { 0 };    //無jwt或偽造時，預設userRole = 0 (Guest)            
             string authHeader = context.HttpContext.Request.Headers["Authorization"];
+            string accessAction = context.CurrentAction(); //取得Request呼叫的Action名稱
+            string userAccount = context.CurrentUserId();  //從jwt抓id，無jwt或偽造時，讀出userAccount = null
 
+            /* ----所有request都紀錄log----
+                Request.Body是一個Stream，不能Position = 0
+                只能讀取一次
+                因此net core提供EnableRewind()倒帶功能
+                開啟後讀取完只要把Positoin歸零，就可重複讀寫！  */
+            HttpRequest request = context.HttpContext.Request;
+            request.EnableRewind();            
+            LogRequest(request, userAccount, accessAction);    //call db to log
+            request.Body.Seek(0, SeekOrigin.Begin);
+
+            // ----正式驗證request權限---- //
             if (authHeader != null && authHeader.StartsWith("Bearer", true, CultureInfo.CurrentCulture))
             {
                 //----Extract credentials----//
@@ -51,9 +65,18 @@ namespace FarmerAPI.Filters
                 //Encoding encoding = Encoding.GetEncoding("iso-8859-1");
                 //string usernamePassword = encoding.GetString(Convert.FromBase64String(encodedUsernamePassword));
 
-                if (HasAllowedAction(userRole, accessAction) && HasUserRole(userAccount, userRole))
+                                                            
+                List<int> RoleID = _context.ImemRole
+                    .Where(y => y.Account == userAccount)
+                    .Select(x => x.RoleId)
+                    .ToList();
+
+                //任一角色有權限即可執行Action
+                userRole.AddRange(RoleID);
+                if (HasAllowedAction(userRole, accessAction) && HasUserRole(userRole, userAccount))
                 {
-                    //pass vertification and do nothing here
+                    //here should write a log per request!!??
+                    //do nothing here!
                 }
                 else
                 {
@@ -101,20 +124,50 @@ namespace FarmerAPI.Filters
         }      
               
         //檢查使用者是否有該角色
-        public bool HasUserRole(string username, int userRole)
+        public bool HasUserRole(List<int> userRole, string username)
         {
-            return _context.ImemRole.Any(x => x.Account == username && x.RoleId == userRole);
+            return _context.ImemRole.Any(x => x.Account == username && userRole.Contains(x.RoleId));
         }
 
         //檢查使用者是否有權限執行該Action
-        public bool HasAllowedAction(int userRole, string action)
+        public bool HasAllowedAction(List<int> userRole, string action)
         {
             return _context.Actions.Any(x =>
                 x.Name == action &&
                 x.IactionRole.Any(
-                    y => y.RoleId == userRole && y.ActionId == x.Id
+                    y => userRole.Contains(y.RoleId) && y.ActionId == x.Id
                 )
             );
+        }
+
+
+        public async void LogRequest(HttpRequest Request, string Account, string Action)
+        {
+
+            byte[] buffer = new byte[Convert.ToInt32(Request.ContentLength)];
+            await Request.Body.ReadAsync(buffer, 0, buffer.Length);
+            string bodyAsText = Encoding.UTF8.GetString(buffer);
+
+            //紀錄System Log
+            _context.SystemLog.Add(new SystemLog
+            {
+                LogTime = DateTime.Now,
+                Account = Account ?? "Guest",
+                Action = Action,
+                Route = Request.Path,
+                Method = Request.Method,
+                Detail = bodyAsText,
+                Ip = _accessor.HttpContext.Connection.RemoteIpAddress.ToString()
+            });
+
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (DbUpdateException)
+            {
+                throw;
+            }
         }
     }
 }

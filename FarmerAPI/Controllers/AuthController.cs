@@ -44,7 +44,7 @@ namespace FarmerAPI.Controllers
                 var key = Encoding.ASCII.GetBytes(_config["Jwt:Key"]);
                 var authTime = DateTime.UtcNow.ToLocalTime();//ToLocalTime變UTC+8時區
                 var expiresAt = authTime.AddDays(7);
-                int RoleID = _context.ImemRole.Where(y => y.Account == AuthRequest.Account).Select(x => x.RoleId).First();
+                
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {
                     Subject = new ClaimsIdentity(new Claim[]
@@ -52,7 +52,7 @@ namespace FarmerAPI.Controllers
                         new Claim(JwtClaimTypes.Audience, _config["Jwt:Audience"]),
                         new Claim(JwtClaimTypes.Issuer, _config["Jwt:Issuer"]),
                         new Claim(JwtClaimTypes.Id, AuthRequest.Account),
-                        new Claim(JwtClaimTypes.RoleId, RoleID.ToString()),
+                        //new Claim(JwtClaimTypes.RoleId, RoleID.ToString()), //停止在jwt加入角色資訊，統一用id(帳號)判斷
                         //new Claim(JwtClaimTypes.Email, user.Email),
                         //new Claim(JwtClaimTypes.PhoneNumber, user.PhoneNumber)
                     }),
@@ -89,16 +89,7 @@ namespace FarmerAPI.Controllers
                     else
                     {
                         _context.Token.Add(SaveInfo);
-                    }
-                    
-                    //紀錄System Log
-                    _context.SystemLog.Add(new SystemLog {
-                        LogTime = authTime,
-                        Account = AuthRequest.Account,
-                        Action = ControllerContext.ActionDescriptor.ActionName,
-                        Detail = "Success to Authorize and make a token",
-                        Ip = _accessor.HttpContext.Connection.RemoteIpAddress.ToString()
-                    });
+                    } 
 
                     await _context.SaveChangesAsync();
                 }

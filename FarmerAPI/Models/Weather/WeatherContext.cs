@@ -262,11 +262,13 @@ namespace FarmerAPI.Models
 
                 entity.Property(e => e.LogTime).HasColumnType("datetime");
 
-                entity.HasOne(d => d.AccountNavigation)
-                    .WithMany(p => p.SystemLog)
-                    .HasForeignKey(d => d.Account)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_SystemLog_Member");
+                entity.Property(e => e.Method)
+                    .HasMaxLength(10)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Route)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
             });
 
             modelBuilder.Entity<Token>(entity =>

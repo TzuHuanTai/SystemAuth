@@ -8,7 +8,6 @@ namespace FarmerAPI.Models
         public Member()
         {
             ImemRole = new HashSet<ImemRole>();
-            SystemLog = new HashSet<SystemLog>();
         }
 
         public string Domain { get; set; }
@@ -24,6 +23,5 @@ namespace FarmerAPI.Models
 
         public Token Token { get; set; }
         public ICollection<ImemRole> ImemRole { get; set; }
-        public ICollection<SystemLog> SystemLog { get; set; }
     }
 }
