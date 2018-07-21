@@ -46,41 +46,6 @@ namespace FarmerAPI.Controllers
             return Ok(imemRole);
         }
 
-        // PUT: api/ImemRoles/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutImemRole([FromRoute] string id, [FromBody] ImemRole imemRole)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (id != imemRole.Account)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(imemRole).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ImemRoleExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
         // POST: api/ImemRoles
         [HttpPost]
         public async Task<IActionResult> PostImemRole([FromBody] ImemRole imemRole)
@@ -106,20 +71,20 @@ namespace FarmerAPI.Controllers
                     throw;
                 }
             }
-
             return CreatedAtAction("GetImemRole", new { id = imemRole.Account }, imemRole);
         }
 
         // DELETE: api/ImemRoles/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteImemRole([FromRoute] string id)
+        [HttpDelete("{Account}/{RoleId}")]
+        public async Task<IActionResult> DeleteImemRole([FromRoute] string Account, [FromRoute] int RoleId)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var imemRole = await _context.ImemRole.SingleOrDefaultAsync(m => m.Account == id);
+            //ImemRole是雙主鍵！兩個pk都要判斷！
+            var imemRole = await _context.ImemRole.SingleOrDefaultAsync(m => m.Account == Account && m.RoleId == RoleId);
             if (imemRole == null)
             {
                 return NotFound();

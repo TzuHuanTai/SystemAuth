@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FarmerAPI.Models;
+using FarmerAPI.ViewModels;
 
 namespace FarmerAPI.Controllers
 {
@@ -18,6 +19,55 @@ namespace FarmerAPI.Controllers
         public RoleGroupsController(WeatherContext context)
         {
             _context = context;
+        }
+
+        [HttpGet("[action]")]
+        public IEnumerable<RoleGroupNode> GetRoleGroupTree()
+        {
+            IEnumerable<RoleGroup> Roles = _context.RoleGroup;
+
+            List<RoleGroupNode> ReturnRole = new List<RoleGroupNode>();
+
+            //有很多棵tree，每個ParentRoleId為null的都是root of tree
+            foreach (RoleGroup Root in Roles.Where(x => x.ParentRoleId == null))
+            {
+                //找出所有root底下的leafs
+                RoleGroupNode RootImenu = new RoleGroupNode() { Id = Root.RoleId, Name = Root.RoleName };
+                List<RoleGroupNode> Tree = TreeRoleGroup(RootImenu, Roles);
+
+                //加入回傳的tree
+                ReturnRole.Add(Tree[0]);
+            };
+
+            return ReturnRole;
+        }
+
+        private List<RoleGroupNode> TreeRoleGroup(RoleGroupNode Root, IEnumerable<RoleGroup> AllRoles)
+        {
+            List<RoleGroupNode> ReturnTreeRole = new List<RoleGroupNode>();
+
+            RoleGroupNode TreeRoot = new RoleGroupNode()
+            {
+                Id = Root.Id,
+                Name = Root.Name,
+                
+            };
+
+            if (AllRoles.Any(x => x.ParentRoleId == Root.Id))
+            {
+                TreeRoot.Children = new List<RoleGroupNode>();
+                //找root及其底下leafs
+                foreach (RoleGroup Item in AllRoles.Where(x => x.ParentRoleId == Root.Id)) // && x.MenuId == Root.MenuId
+                {
+                    RoleGroupNode ItemImenu = new RoleGroupNode() { Id = Item.RoleId, Name = Item.RoleName };
+                    List<RoleGroupNode> Node = TreeRoleGroup(ItemImenu, AllRoles);
+                    TreeRoot.Children.Add(Node[0]);
+                };
+            }            
+
+            ReturnTreeRole.Add(TreeRoot);
+
+            return ReturnTreeRole;
         }
 
         // GET: api/RoleGroups

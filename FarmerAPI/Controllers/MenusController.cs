@@ -50,10 +50,10 @@ namespace FarmerAPI.Controllers
             MenuNode TreeRoot = new MenuNode()
             {
                 MenuId = Root.MenuId,
-                MenuText = Root.MenuText
+                MenuText = Root.MenuText                
             };
 
-            if (AllMenu.Any(x => x.RootMenuId == Root.MenuId))
+            if(AllMenu.Any(x => x.RootMenuId == Root.MenuId))
             {
                 TreeRoot.Children = new List<MenuNode>();
                 //找root及其底下leafs
@@ -64,6 +64,7 @@ namespace FarmerAPI.Controllers
                     TreeRoot.Children.Add(Node[0]);
                 };
             }
+           
 
             ReturnTreeMenu.Add(TreeRoot);
 

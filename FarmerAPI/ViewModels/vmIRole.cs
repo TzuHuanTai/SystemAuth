@@ -23,4 +23,11 @@ namespace FarmerAPI.ViewModels
         public string Name { get; set; }        
         public List<Actions> Children { get; set; }
     }
+
+    public class RoleGroupNode
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public List<RoleGroupNode> Children { get; set; }
+    }
 }
