@@ -31,9 +31,24 @@ namespace FarmerAPI.Controllers
         [HttpGet("[action]")]
         public IEnumerable<vmMenu>  GetAllowedMenu()
         {
-            int RoleId = _accessor.CurrentUserRole();//從Token抓RoleId
-            List<int> AllowedMenuId = _context.ImenuRole.Where(x => x.RoleId == RoleId).Select(x => x.MenuId).ToList();
-            IEnumerable<Menu> AuthMenu = _context.Menu.Where(x => AllowedMenuId.Contains(x.MenuId));
+            //從Token抓user帳號，無則null
+            string Account = _accessor.CurrentUserId();
+
+            //該帳號所有角色可進入的Menu都篩選出來
+            List<int> AllowedMenuId = _context.ImenuRole
+                .Where(x => x.Role.ImemRole.Any(y => y.Account == Account))
+                .Select(x => x.MenuId)
+                .ToList();
+
+            //角色至少有Guest
+            AllowedMenuId.Add(0);
+
+            //撈出允許的menu資料
+            IEnumerable<Menu> AuthMenu = _context.Menu.Where(x =>
+                x.ImenuRole.Any(y =>
+                    AllowedMenuId.Contains(y.RoleId)
+                )
+            );
 
             List<vmMenu> ReturnMenu = new List<vmMenu>();
             
