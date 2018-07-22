@@ -14,6 +14,7 @@ namespace FarmerAPI.Models
         public string Path { get; set; }
         public string MenuText { get; set; }
         public int SortNo { get; set; }
+        public string Selector { get; set; }
         public string Component { get; set; }
         public int? RootMenuId { get; set; }
 

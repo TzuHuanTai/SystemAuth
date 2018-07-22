@@ -36,7 +36,7 @@ namespace FarmerAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            var imemRole = _context.ImemRole.Where(m => m.Account == id);
+            var imemRole = await _context.ImemRole.Where(m => m.Account == id).ToListAsync();
 
             if (imemRole == null)
             {

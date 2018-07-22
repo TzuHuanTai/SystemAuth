@@ -10,6 +10,7 @@ namespace FarmerAPI.ViewModels
         public string Path { get; set; }
         public string MenuText { get; set; }        
         public string Component { get; set; }
+        public string Selector { get; set; }
         public List<vmMenu> Children { get; set; }
     }
 

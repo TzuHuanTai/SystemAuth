@@ -185,6 +185,8 @@ namespace FarmerAPI.Models
                     .HasColumnName("MenuID")
                     .ValueGeneratedNever();
 
+                entity.Property(e => e.Selector).HasMaxLength(50);
+
                 entity.Property(e => e.Component).HasMaxLength(50);
 
                 entity.Property(e => e.MenuText)

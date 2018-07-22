@@ -148,6 +148,7 @@ namespace FarmerAPI.Controllers
             {
                 Path = Root.Path,
                 MenuText = Root.MenuText,
+                Selector = Root.Selector,
                 Component = Root.Component
             };
 
