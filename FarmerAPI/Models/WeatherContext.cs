@@ -208,9 +208,9 @@ namespace FarmerAPI.Models
 
                 entity.Property(e => e.Rh)
                     .HasColumnName("RH")
-                    .HasColumnType("decimal(5, 2)");
+                    .HasColumnType("decimal?(5, 2)");
 
-                entity.Property(e => e.Temperature).HasColumnType("decimal(5, 2)");
+                entity.Property(e => e.Temperature).HasColumnType("decimal?(5, 2)");
             });
 
             modelBuilder.Entity<RoleGroup>(entity =>
@@ -309,43 +309,43 @@ namespace FarmerAPI.Models
 
                 entity.Property(e => e.ObsTime).HasColumnType("datetime");
 
-                entity.Property(e => e.GlobalRad).HasColumnType("decimal(5, 2)");
+                entity.Property(e => e.GlobalRad).HasColumnType("decimal?(5, 2)");
 
-                entity.Property(e => e.Precp).HasColumnType("decimal(4, 1)");
+                entity.Property(e => e.Precp).HasColumnType("decimal?(4, 1)");
 
-                entity.Property(e => e.PrecpHour).HasColumnType("decimal(3, 1)");
+                entity.Property(e => e.PrecpHour).HasColumnType("decimal?(3, 1)");
 
                 entity.Property(e => e.Rh)
                     .HasColumnName("RH")
-                    .HasColumnType("decimal(3, 0)");
+                    .HasColumnType("decimal?(3, 0)");
 
-                entity.Property(e => e.SeaPres).HasColumnType("decimal(5, 1)");
+                entity.Property(e => e.SeaPres).HasColumnType("decimal?(5, 1)");
 
-                entity.Property(e => e.StnPres).HasColumnType("decimal(5, 1)");
+                entity.Property(e => e.StnPres).HasColumnType("decimal?(5, 1)");
 
-                entity.Property(e => e.SunShine).HasColumnType("decimal(2, 1)");
+                entity.Property(e => e.SunShine).HasColumnType("decimal?(2, 1)");
 
-                entity.Property(e => e.Td).HasColumnType("decimal(3, 1)");
+                entity.Property(e => e.Td).HasColumnType("decimal?(3, 1)");
 
-                entity.Property(e => e.Temperature).HasColumnType("decimal(3, 1)");
+                entity.Property(e => e.Temperature).HasColumnType("decimal?(3, 1)");
 
-                entity.Property(e => e.Visb).HasColumnType("decimal(3, 1)");
+                entity.Property(e => e.Visb).HasColumnType("decimal?(3, 1)");
 
                 entity.Property(e => e.Wd)
                     .HasColumnName("WD")
-                    .HasColumnType("decimal(3, 0)");
+                    .HasColumnType("decimal?(3, 0)");
 
                 entity.Property(e => e.Wdgust)
                     .HasColumnName("WDGust")
-                    .HasColumnType("decimal(3, 0)");
+                    .HasColumnType("decimal?(3, 0)");
 
                 entity.Property(e => e.Ws)
                     .HasColumnName("WS")
-                    .HasColumnType("decimal(3, 1)");
+                    .HasColumnType("decimal?(3, 1)");
 
                 entity.Property(e => e.Wsgust)
                     .HasColumnName("WSGust")
-                    .HasColumnType("decimal(3, 1)");
+                    .HasColumnType("decimal?(3, 1)");
 
                 entity.HasOne(d => d.StationNumNavigation)
                     .WithMany(p => p.WeatherData)

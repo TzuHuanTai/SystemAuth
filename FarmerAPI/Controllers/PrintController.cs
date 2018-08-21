@@ -20,7 +20,7 @@ namespace FarmerAPI.Controllers
     [Produces("application/json")]
     [Route("api/Print")]
     public class PrintController : Controller
-    {
+    {       
         private IHostingEnvironment _hostingEnvironment;
 
         public PrintController(IHostingEnvironment hostingEnvironment)
@@ -109,17 +109,18 @@ namespace FarmerAPI.Controllers
 
 
         [HttpGet("[action]")]
-        // Custom => 客戶代號
+        // Customer => 客戶代號
         // Variety  => 品種
         // Type => 種類
         // Brand => 品牌
         // ProductName => 品名
         // BeginDate => 起始交易日期
         // EndDate => 結束交易日期
-        public FileResult DemoGet(string Custom, string Variety, string Type,
-            string Brand, string ProductName, string Company = "公司名",
+        // PrintType => 列印別
+        public FileResult DemoGet(string Customer, string Variety, string Type,
+            string Brand, string PrintType, string ProductName, string Company = "公司名",
             string BeginDate = "2018-7-19", string EndDate = "2018-7-25")
-        {
+        {                       
             // 轉日期格式
             BeginDate = Convert.ToDateTime(BeginDate).ToString("yyyy.MM.dd");
             EndDate = Convert.ToDateTime(EndDate).ToString("yyyy.MM.dd");
@@ -173,15 +174,19 @@ namespace FarmerAPI.Controllers
                     RangeCell.DataType = new EnumValue<CellValues>(CellValues.String);
 
                     // 插入內容
-                    for (int i = 0; i < 10; i++)
+                    int RowCount = 10;
+                    int ColumnCount = 5;
+                    int HeaderCount = 5;
+                    for (int i = 0; i < RowCount; i++)
                     {
-                        InsertRow(sheetData, (uint)(5 + i));        //表頭有5列，在其後加入空白Row在第6列
-                        Row row = GetRow(sheetData, (uint)(6 + i)); //RowIndex開頭為1，加入的第6列RowIndex為6
-                        for (int j = 0; j < 5; j++)
+                        InsertRow(sheetData, (uint)(HeaderCount + i));        //表頭有5列，在其後加入空白Row在第6列
+                        Row row = GetRow(sheetData, (uint)(HeaderCount + 1 + i)); //RowIndex開頭為1，加入的第6列RowIndex為6
+                        for (int j = 0; j < ColumnCount; j++)
                         {
                             Cell dataCell = new Cell
                             {
                                 CellValue = new CellValue($"{j + 1}行{i + 1}列"),
+
                                 DataType = new EnumValue<CellValues>(CellValues.String),
                                 CellReference = $"{alpha[j]}{row.RowIndex}"
                             };

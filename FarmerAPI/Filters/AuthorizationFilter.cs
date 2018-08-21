@@ -52,10 +52,11 @@ namespace FarmerAPI.Filters
                 只能讀取一次
                 因此net core提供EnableRewind()倒帶功能
                 開啟後讀取完只要把Positoin歸零，就可重複讀寫！  */
-            HttpRequest request = context.HttpContext.Request;
-            request.EnableRewind();            
-            LogRequest(request, userAccount, accessAction);    //call db to log
-            request.Body.Seek(0, SeekOrigin.Begin);
+                //掉header bug .net core 2.2.0才會修正，小心使用
+            //HttpRequest request = context.HttpContext.Request;
+            //request.EnableRewind();            
+            //LogRequest(request, userAccount, accessAction);    //call db to log
+            //request.Body.Seek(0, SeekOrigin.Begin);
 
             // ----正式驗證request權限---- //
             if (authHeader != null && authHeader.StartsWith("Bearer", true, CultureInfo.CurrentCulture))

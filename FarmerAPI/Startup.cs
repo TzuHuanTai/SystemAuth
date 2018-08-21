@@ -69,12 +69,15 @@ namespace FarmerAPI
             services.AddDbContext<WeatherContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("MyDB")
             ));
+            services.AddDbContext<KMVContext>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("frudat")
+            ));
             services.AddDbContext<SystemStructureContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("MyDB2")
             ));
             services.AddDbContext<SystemStructure2Context>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("MyDB2")
-            ));
+            ));                     
 
             //----加入cross-origin-request-sharing----//
             services.AddCors(options=>
@@ -91,10 +94,18 @@ namespace FarmerAPI
                 options.AddPolicy("AllowAllOrigins",
                     builder =>
                     {
+                        //CORS responses only expose these 6 headers:
+                        //1.Cache-Control
+                        //2.Content-Language
+                        //3.Content-Type
+                        //4.Expires
+                        //5.Last-Modified
+                        //6.Pragma
                         builder.AllowAnyOrigin()
                                .AllowAnyMethod()
                                .AllowAnyHeader()
-                               .AllowCredentials();
+                               .AllowCredentials()
+                               .WithExposedHeaders("Content-Disposition"); // content-disposition is *exposed* (and allowed because of AllowAnyHeader)
                     });
                 // END02
 
