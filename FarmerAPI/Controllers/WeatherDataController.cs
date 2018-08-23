@@ -76,11 +76,6 @@ namespace FarmerWeb.Controllers
             };
             return ReturnStations;
         }
-
-        // POST api/values
-        [HttpPost]
-        public void Post([FromBody]string value)
-        {
-        }
+      
     }
 }

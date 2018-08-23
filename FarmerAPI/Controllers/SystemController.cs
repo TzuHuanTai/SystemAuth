@@ -9,23 +9,96 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using FarmerAPI.Extensions;
+using System.Reflection;
+using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.Extensions.Configuration;
 
 namespace FarmerAPI.Controllers
 {
     [Route("api/[controller]")]
     public class SystemController : Controller
     {
+        private IConfiguration _config;
         private readonly WeatherContext _context;
         private readonly IHttpContextAccessor _accessor;
         private readonly SystemStructureContext _contextSys;
         private readonly SystemStructure2Context _contextSys2;
 
-        public SystemController(WeatherContext context, IHttpContextAccessor accessor, SystemStructureContext contextSys, SystemStructure2Context contextSys2)
+        public SystemController(IConfiguration config, WeatherContext context, IHttpContextAccessor accessor, SystemStructureContext contextSys, SystemStructure2Context contextSys2)
         {
+            _config = config;
             _context = context;
             _accessor = accessor;
             _contextSys = contextSys;
             _contextSys2 = contextSys2;
+        }
+
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GetReflection()
+        {
+            var DbExistCtrls = _context.Ctrl;
+            var DbExistActions = _context.Actions;
+ 
+            IEnumerable<Type> controllers = Assembly.GetExecutingAssembly().GetExportedTypes().Where(t => typeof(ControllerBase).IsAssignableFrom(t)).Select(t => t);            
+
+            foreach (Type controller in controllers)
+            {
+                int ControllerID;
+                string ControllerName = controller.Name.Replace("Controller","");
+
+                //檢查是否已有Controller登入
+                if (IsControllerExists(ControllerName))
+                {                    
+                    //有則抓出id
+                    ControllerID = DbExistCtrls.Where(x => x.Name == ControllerName).Select(x => x.Id).SingleOrDefault();
+                }
+                else
+                {
+                    ControllerID = DbExistCtrls.Max(x => x.Id) + 1;
+                    Ctrl ctrl = new Ctrl()
+                    {
+                        Id = ControllerID,
+                        Name = ControllerName
+                    };
+
+                    _context.Ctrl.Add(ctrl);
+                    //先存擋
+                    await _context.SaveChangesAsync();
+                }                
+
+                List<MethodInfo> actions = controller.GetMethods().Where(t => !t.IsSpecialName && t.DeclaringType.IsSubclassOf(typeof(ControllerBase)) && t.DeclaringType.FullName == controller.FullName && t.IsPublic && !t.IsStatic).ToList();
+
+                foreach (MethodInfo action in actions)
+                {
+                    Attribute attribute = action.GetCustomAttributes().Where(attr => attr is IActionHttpMethodProvider).FirstOrDefault();
+                    
+                    string ActionName = action.Name;
+                    string HttpMethod = attribute.GetType().Name.Replace("Http", "").Replace("Attribute", "");
+
+                    //int ActionID;
+
+                    //檢查是否已有Action登入在此Controller下
+                    if (IsActionsExists(ActionName, ControllerID, HttpMethod))
+                    {
+                       // do nothing
+                    }
+                    else
+                    {
+                        int ActID = DbExistActions.Max(x => x.Id) + 1;
+                        Actions act = new Actions()
+                        {
+                            Id = ActID,
+                            Name = ActionName,
+                            Method = HttpMethod,
+                            ControllerId = ControllerID
+                        };
+                        _context.Actions.Add(act);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
+
+            return Ok();
         }
 
         [HttpGet("[action]")]
@@ -166,6 +239,16 @@ namespace FarmerAPI.Controllers
             ReturnTreeMenu.Add(TreeRoot);
 
             return ReturnTreeMenu;
+        }
+
+        private bool IsActionsExists(string Name, int CtrlID, string HttpMethod)
+        {
+            return _context.Actions.Any(e => e.Name == Name && e.ControllerId == CtrlID && e.Method.ToLower() == HttpMethod.ToLower());
+        }
+
+        private bool IsControllerExists(string Name)
+        {
+            return _context.Ctrl.Any(e => e.Name == Name);
         }
     }
 }

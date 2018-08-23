@@ -30,7 +30,7 @@ namespace FarmerAPI.Controllers
 
         // GET: api/Print
         [HttpGet]
-        public FileStreamResult Get()
+        public FileStreamResult TestGet()
         {
             // 1. 開啟 Excel 檔案，取得工作簿
             var memoryStream = new MemoryStream();
