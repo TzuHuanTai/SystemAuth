@@ -103,19 +103,18 @@ namespace SystemAuth.Controllers
             //從Token抓user帳號，無則null
             string Account = _accessor.CurrentUserId();
 
-            //該帳號所有角色可進入的Menu都篩選出來
+            //該帳號所有角色可進入的menu都篩選出來
             List<int> AllowedMenuId = _context.ImenuRole
-                .Where(x => x.Role.ImemRole.Any(y => y.Account == Account))
+				//角色至少有Guest: 0 
+				.Where(x => x.Role.ImemRole.Any(y => y.Account == Account) || x.RoleId == 0)
                 .Select(x => x.MenuId)
+				.Distinct()
                 .ToList();
-
-            //角色至少有Guest
-            AllowedMenuId.Add(0);
 
             //撈出允許的menu資料
             IEnumerable<Menu> AuthMenu = _context.Menu.Where(x =>
                 x.ImenuRole.Any(y =>
-                    AllowedMenuId.Contains(y.RoleId)
+                    AllowedMenuId.Contains(y.MenuId)
                 )
             );
 

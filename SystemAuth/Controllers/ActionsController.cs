@@ -38,12 +38,13 @@ namespace SystemAuth.Controllers
             {
                 List<Actions> ChildList = ActionsList.Where(x=>x.ControllerId==Ctrl.CtrlId).ToList();
 
-                List<Actions> Child = new List<Actions>();
+                List<ActionNode> Child = new List<ActionNode>();
                 foreach (Actions action in ChildList)
                 {
-                    Child.Add(new Actions
-                    {
-                        ActionId=action.ActionId,
+                    Child.Add(new ActionNode
+					{
+						//樹枝與樹幹相同屬性之名稱必須相同
+                        Id=action.ActionId,
                         Name=action.Name,
                         Method=action.Method
                     });

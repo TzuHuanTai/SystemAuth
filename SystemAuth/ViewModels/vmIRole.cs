@@ -21,10 +21,19 @@ namespace SystemAuth.ViewModels
     {
         public int Id { get; set; }
         public string Name { get; set; }        
-        public List<Actions> Children { get; set; }
+        public List<ActionNode> Children { get; set; }
     }
 
-    public class RoleGroupNode
+	public class ActionNode
+	{
+		public int Id { get; set; }
+		public string Name { get; set; }
+		public string Method { get; set; }
+		public int ControllerId { get; set; }
+		public string Description { get; set; }		
+	}
+
+	public class RoleGroupNode
     {
         public int Id { get; set; }
         public string Name { get; set; }
