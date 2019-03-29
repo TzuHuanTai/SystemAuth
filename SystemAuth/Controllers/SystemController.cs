@@ -111,12 +111,12 @@ namespace SystemAuth.Controllers
 				.Distinct()
                 .ToList();
 
-            //撈出允許的menu資料
+            //撈出允許的menu資料，並依造SortNo排序
             IEnumerable<Menu> AuthMenu = _context.Menu.Where(x =>
                 x.ImenuRole.Any(y =>
                     AllowedMenuId.Contains(y.MenuId)
                 )
-            );
+            ).OrderBy(x=>x.SortNo);
 
             List<vmMenu> ReturnMenu = new List<vmMenu>();
             
