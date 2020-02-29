@@ -5,8 +5,8 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using SystemAuth.Models;
 using SystemAuth.ViewModels;
+using SystemAuth.Models.SQLite;
 
 namespace SystemAuth.Controllers
 {

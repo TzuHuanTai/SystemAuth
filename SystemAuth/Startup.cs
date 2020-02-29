@@ -9,9 +9,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
-using SystemAuth.Models;
 using SystemAuth.Filters;
 using SystemAuth.ViewModels;
+using SystemAuth.Models.SQLite;
 
 namespace SystemAuth
 {
@@ -57,10 +57,12 @@ namespace SystemAuth
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             //----連接DB，原本ConnectString移到appsettings.json----//
+            //services.AddDbContext<SystemAuthContext>(options =>
+            //    options.UseSqlServer(Configuration.GetConnectionString("AuthDB"))
+            //);
             services.AddDbContext<SystemAuthContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("AuthDB")
-            ));           
-          
+                options.UseSqlite(Configuration.GetConnectionString("systemAuth"))
+            );
 
             //----加入cross-origin-request-sharing----//
             services.AddCors(options=>
@@ -97,7 +99,7 @@ namespace SystemAuth
                 //全域註冊Filter，靠AuthorizationFilter驗證身分權限                
                 //Configuration.Filters.Add(new AuthorizationFilter());
 
-                //再全域註冊Filter，ServiceFilterAttribute方式會被解析要用dependency injection，這樣就可在filter使用db功能
+                //全域註冊Filter，ServiceFilterAttribute方式會被解析要用dependency injection，這樣就可在filter使用db功能
                 Configuration.Filters.Add(new ServiceFilterAttribute(typeof(AuthorizationFilter)));
             });
 

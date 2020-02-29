@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace SystemAuth.Models
+namespace SystemAuth.Models.SqlServer
 {
     public partial class Token
     {

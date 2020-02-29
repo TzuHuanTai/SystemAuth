@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using SystemAuth.Models;
+using SystemAuth.Models.SQLite;
 
 namespace SystemAuth.Controllers
 {
@@ -21,9 +21,9 @@ namespace SystemAuth.Controllers
 
         // GET: api/ImenuRoles
         [HttpGet]
-        public IEnumerable<ImenuRole> GetImenuRole()
+        public IEnumerable<IMenuRole> GetImenuRole()
         {
-            return _context.ImenuRole;
+            return _context.IMenuRole;
         }
 
         // GET: api/ImenuRoles/5
@@ -35,7 +35,7 @@ namespace SystemAuth.Controllers
                 return BadRequest(ModelState);
             }
 
-            var imenuRole = await _context.ImenuRole.SingleOrDefaultAsync(m => m.MenuId == id);
+            var imenuRole = await _context.IMenuRole.SingleOrDefaultAsync(m => m.MenuId == id);
 
             if (imenuRole == null)
             {
@@ -47,21 +47,21 @@ namespace SystemAuth.Controllers
 
         // POST: api/ImenuRoles
         [HttpPost]
-        public async Task<IActionResult> PostImenuRole([FromBody] ImenuRole imenuRole)
+        public async Task<IActionResult> PostImenuRole([FromBody] IMenuRole iMenuRole)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            _context.ImenuRole.Add(imenuRole);
+            _context.IMenuRole.Add(iMenuRole);
             try
             {
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateException)
             {
-                if (ImenuRoleExists(imenuRole.MenuId, imenuRole.RoleId))
+                if (ImenuRoleExists(iMenuRole.MenuId, iMenuRole.RoleId))
                 {
                     return new StatusCodeResult(StatusCodes.Status409Conflict);
                 }
@@ -71,7 +71,7 @@ namespace SystemAuth.Controllers
                 }
             }
 
-            return CreatedAtAction("GetImenuRole", new { id = imenuRole.MenuId }, imenuRole);
+            return CreatedAtAction("GetImenuRole", new { id = iMenuRole.MenuId }, iMenuRole);
         }
 
         // DELETE: api/ImenuRoles/5
@@ -84,22 +84,22 @@ namespace SystemAuth.Controllers
             }
 
             //ImenuRole是雙主鍵！兩個pk都要判斷！
-            var imenuRole = await _context.ImenuRole.SingleOrDefaultAsync(m => m.MenuId == MenuId && m.RoleId == RoleId);
-            if (imenuRole == null)
+            var iMenuRole = await _context.IMenuRole.SingleOrDefaultAsync(m => m.MenuId == MenuId && m.RoleId == RoleId);
+            if (iMenuRole == null)
             {
                 return NotFound();
             }
 
-            _context.ImenuRole.Remove(imenuRole);
+            _context.IMenuRole.Remove(iMenuRole);
             await _context.SaveChangesAsync();
 
-            return Ok(imenuRole);
+            return Ok(iMenuRole);
         }
 
         private bool ImenuRoleExists(int MenuId, int RoleId)
         {
             //ImenuRole是雙主鍵！兩個pk都要判斷！
-            return _context.ImenuRole.Any(e => e.MenuId == MenuId && e.RoleId == RoleId);
+            return _context.IMenuRole.Any(e => e.MenuId == MenuId && e.RoleId == RoleId);
         }
     }
 }

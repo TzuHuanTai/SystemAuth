@@ -3,8 +3,8 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SystemAuth.Models;
 using SystemAuth.ViewModels;
+using SystemAuth.Models.SQLite;
 
 namespace SystemAuth.Controllers
 {

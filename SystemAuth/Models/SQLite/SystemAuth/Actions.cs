@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace SystemAuth.Models
+namespace SystemAuth.Models.SQLite
 {
     public partial class Actions
     {
         public Actions()
         {
-            IactionRole = new HashSet<IactionRole>();
+            IActionRole = new HashSet<IActionRole>();
         }
 
         public int ActionId { get; set; }
@@ -16,7 +16,7 @@ namespace SystemAuth.Models
         public int ControllerId { get; set; }
         public string Description { get; set; }
 
-        public Ctrl Controller { get; set; }
-        public ICollection<IactionRole> IactionRole { get; set; }
+        public virtual Ctrl Controller { get; set; }
+        public virtual ICollection<IActionRole> IActionRole { get; set; }
     }
 }

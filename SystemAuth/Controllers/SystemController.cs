@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Configuration;
-using SystemAuth.Models;
 using SystemAuth.ViewModels;
 using SystemAuth.Extensions;
+using SystemAuth.Models.SQLite;
 
 namespace SystemAuth.Controllers
 {
@@ -102,16 +102,16 @@ namespace SystemAuth.Controllers
             string Account = _accessor.CurrentUserId();
 
             //該帳號所有角色可進入的menu都篩選出來
-            List<int> AllowedMenuId = _context.ImenuRole
+            List<int> AllowedMenuId = _context.IMenuRole
 				//角色至少有Guest: 0 
-				.Where(x => x.Role.ImemRole.Any(y => y.Account == Account) || x.RoleId == 0)
+				.Where(x => x.Role.IMemberRole.Any(y => y.Account == Account) || x.RoleId == 0)
                 .Select(x => x.MenuId)
 				.Distinct()
                 .ToList();
 
             //撈出允許的menu資料，並依造SortNo排序
             List<Menu> AuthMenu = _context.Menu.Where(x =>
-                x.ImenuRole.Any(y =>
+                x.IMenuRole.Any(y =>
                     AllowedMenuId.Contains(y.MenuId)
                 )
             ).OrderBy(x=>x.SortNo).ToList();

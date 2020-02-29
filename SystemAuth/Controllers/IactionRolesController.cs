@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using SystemAuth.Models;
+using SystemAuth.Models.SQLite;
 
 namespace SystemAuth.Controllers
 {
@@ -21,9 +21,9 @@ namespace SystemAuth.Controllers
 
         // GET: api/IactionRoles
         [HttpGet]
-        public IEnumerable<IactionRole> GetIactionRole()
+        public IEnumerable<IActionRole> GetIactionRole()
         {
-            return _context.IactionRole;
+            return _context.IActionRole;
         }
 
         // GET: api/IactionRoles/5
@@ -35,7 +35,7 @@ namespace SystemAuth.Controllers
                 return BadRequest(ModelState);
             }
 
-            var iactionRole = await _context.IactionRole.SingleOrDefaultAsync(m => m.ActionId == id);
+            var iactionRole = await _context.IActionRole.SingleOrDefaultAsync(m => m.ActionId == id);
 
             if (iactionRole == null)
             {
@@ -47,21 +47,21 @@ namespace SystemAuth.Controllers
 
         // POST: api/IactionRoles
         [HttpPost]
-        public async Task<IActionResult> PostIactionRole([FromBody] IactionRole iactionRole)
+        public async Task<IActionResult> PostIactionRole([FromBody] IActionRole iActionRole)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            _context.IactionRole.Add(iactionRole);
+            _context.IActionRole.Add(iActionRole);
             try
             {
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateException)
             {
-                if (IactionRoleExists(iactionRole.ActionId))
+                if (IactionRoleExists(iActionRole.ActionId))
                 {
                     return new StatusCodeResult(StatusCodes.Status409Conflict);
                 }
@@ -71,7 +71,7 @@ namespace SystemAuth.Controllers
                 }
             }
 
-            return CreatedAtAction("GetIactionRole", new { id = iactionRole.ActionId }, iactionRole);
+            return CreatedAtAction("GetIactionRole", new { id = iActionRole.ActionId }, iActionRole);
         }
 
         // DELETE: api/IactionRoles/5
@@ -84,13 +84,13 @@ namespace SystemAuth.Controllers
             }
 
             //IActionRole是雙主鍵！兩個pk都要判斷！
-            var iactionRole = await _context.IactionRole.SingleOrDefaultAsync(m => m.ActionId == ActionId && m.RoleId == RoleId);
+            var iactionRole = await _context.IActionRole.SingleOrDefaultAsync(m => m.ActionId == ActionId && m.RoleId == RoleId);
             if (iactionRole == null)
             {
                 return NotFound();
             }
 
-            _context.IactionRole.Remove(iactionRole);
+            _context.IActionRole.Remove(iactionRole);
             await _context.SaveChangesAsync();
 
             return Ok(iactionRole);
@@ -98,7 +98,7 @@ namespace SystemAuth.Controllers
 
         private bool IactionRoleExists(int id)
         {
-            return _context.IactionRole.Any(e => e.ActionId == id);
+            return _context.IActionRole.Any(e => e.ActionId == id);
         }
     }
 }

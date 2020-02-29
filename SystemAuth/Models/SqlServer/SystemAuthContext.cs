@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
-namespace SystemAuth.Models
+namespace SystemAuth.Models.SqlServer
 {
     public partial class SystemAuthContext : DbContext
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace SystemAuth.Models
+namespace SystemAuth.Models.SQLite
 {
     public partial class App
     {
@@ -15,7 +15,7 @@ namespace SystemAuth.Models
         public string Name { get; set; }
         public string Description { get; set; }
 
-        public ICollection<Ctrl> Ctrl { get; set; }
-        public ICollection<Menu> Menu { get; set; }
+        public virtual ICollection<Ctrl> Ctrl { get; set; }
+        public virtual ICollection<Menu> Menu { get; set; }
     }
 }

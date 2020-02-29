@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
-using SystemAuth.Models;
 using SystemAuth.Extensions;
+using SystemAuth.Models.SQLite;
 
 /* 20180529 @Richard 統一在Startup.cs AddMvc中全域注入此Filter功能是為了達到要"動態"判斷，可判斷Request是否有權限。
  * 說明：
@@ -62,7 +62,7 @@ namespace SystemAuth.Filters
                 //string usernamePassword = encoding.GetString(Convert.FromBase64String(encodedUsernamePassword));
 
                                                             
-                List<int> RoleID = _context.ImemRole
+                List<int> RoleID = _context.IMemberRole
                     .Where(y => y.Account == userAccount)
                     .Select(x => x.RoleId)
                     .ToList();
@@ -122,7 +122,7 @@ namespace SystemAuth.Filters
         //檢查使用者是否有該角色
         public bool HasUserRole(List<int> userRole, string username)
         {
-            return _context.ImemRole.Any(x => x.Account == username && userRole.Contains(x.RoleId));
+            return _context.IMemberRole.Any(x => x.Account == username && userRole.Contains(x.RoleId));
         }
 
         //檢查使用者是否有權限執行該Action
@@ -130,7 +130,7 @@ namespace SystemAuth.Filters
         {
             return _context.Actions.Any(x =>
                 x.Name == action &&
-                x.IactionRole.Any(
+                x.IActionRole.Any(
                     y => userRole.Contains(y.RoleId) && y.ActionId == x.ActionId
                 )
             );

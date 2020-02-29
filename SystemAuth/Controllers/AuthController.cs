@@ -9,8 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using SystemAuth.Models;
 using SystemAuth.ViewModels;
+using SystemAuth.Models.SQLite;
 
 namespace SystemAuth.Controllers
 {
