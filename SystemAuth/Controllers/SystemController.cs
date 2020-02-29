@@ -1,17 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using SystemAuth.Models;
-using SystemAuth.ViewModels;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
-using SystemAuth.Extensions;
 using System.Reflection;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Configuration;
+using SystemAuth.Models;
+using SystemAuth.ViewModels;
+using SystemAuth.Extensions;
 
 namespace SystemAuth.Controllers
 {
@@ -112,11 +110,11 @@ namespace SystemAuth.Controllers
                 .ToList();
 
             //撈出允許的menu資料，並依造SortNo排序
-            IEnumerable<Menu> AuthMenu = _context.Menu.Where(x =>
+            List<Menu> AuthMenu = _context.Menu.Where(x =>
                 x.ImenuRole.Any(y =>
                     AllowedMenuId.Contains(y.MenuId)
                 )
-            ).OrderBy(x=>x.SortNo);
+            ).OrderBy(x=>x.SortNo).ToList();
 
             List<vmMenu> ReturnMenu = new List<vmMenu>();
             
@@ -134,7 +132,7 @@ namespace SystemAuth.Controllers
         }
 
         //children會有很多menu因此屬性為List<vmMenu>，所以必須回傳List<vmMenu>才可跑遞迴
-        private List<vmMenu> TreeMenu(Menu Root, IEnumerable<Menu> AllMenu)
+        private List<vmMenu> TreeMenu(Menu Root, List<Menu> AllMenu)
         {
             List<vmMenu> ReturnTreeMenu = new List<vmMenu>();
 

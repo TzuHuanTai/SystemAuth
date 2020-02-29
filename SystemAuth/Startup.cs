@@ -1,22 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Text;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.EntityFrameworkCore;
-using SystemAuth.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Cors.Internal;
-using SystemAuth.Filters;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.EntityFrameworkCore;
+using SystemAuth.Models;
+using SystemAuth.Filters;
 using SystemAuth.ViewModels;
 
 namespace SystemAuth
@@ -30,7 +24,6 @@ namespace SystemAuth
 		
 		public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             //----驗證(AddAuthentication)Json Web Token----//
@@ -72,101 +65,14 @@ namespace SystemAuth
             //----加入cross-origin-request-sharing----//
             services.AddCors(options=>
             {
-                // BEGIN01
-                options.AddPolicy("AllowSpecificOrigins",
-                builder =>
-                {
-                    builder.WithOrigins("http://example.com", "http://www.contoso.com");
-                });
-                // END01
-
-                // BEGIN02
                 options.AddPolicy("AllowAllOrigins",
                     builder =>
                     {
-                        //CORS responses only expose these 6 headers:
-                        //1.Cache-Control
-                        //2.Content-Language
-                        //3.Content-Type
-                        //4.Expires
-                        //5.Last-Modified
-                        //6.Pragma
                         builder.AllowAnyOrigin()
                                .AllowAnyMethod()
                                .AllowAnyHeader()
-                               .AllowCredentials()
                                .WithExposedHeaders("Content-Disposition"); // content-disposition is *exposed* (and allowed because of AllowAnyHeader)
                     });
-                // END02
-
-                // BEGIN03
-                options.AddPolicy("AllowSpecificMethods",
-                    builder =>
-                    {
-                        builder.WithOrigins("http://example.com")
-                               .WithMethods("GET", "POST", "HEAD");
-                    });
-                // END03
-
-                // BEGIN04
-                options.AddPolicy("AllowAllMethods",
-                    builder =>
-                    {
-                        builder.WithOrigins("http://example.com")
-                               .AllowAnyMethod();
-                    });
-                // END04
-
-                // BEGIN05
-                options.AddPolicy("AllowHeaders",
-                    builder =>
-                    {
-                        builder.WithOrigins("http://example.com")
-                               .WithHeaders("accept", "content-type", "origin", "x-custom-header");
-                    });
-                // END05
-
-                // BEGIN06
-                options.AddPolicy("AllowAllHeaders",
-                    builder =>
-                    {
-                        builder.WithOrigins("http://example.com")
-                               .AllowAnyHeader();
-                    });
-                // END06
-
-                // BEGIN07
-                options.AddPolicy("ExposeResponseHeaders",
-                    builder =>
-                    {
-                        builder.WithOrigins("http://example.com")
-                               .WithExposedHeaders("x-custom-header");
-                    });
-                // END07
-
-                // BEGIN08
-                options.AddPolicy("AllowCredentials",
-                    builder =>
-                    {
-                        builder.WithOrigins("http://example.com")
-                               .AllowCredentials();
-                    });
-                // END08
-
-                // BEGIN09
-                options.AddPolicy("SetPreflightExpiration",
-                    builder =>
-                    {
-                        builder.WithOrigins("http://example.com")
-                               .SetPreflightMaxAge(TimeSpan.FromSeconds(2520));
-                    });
-                // END09
-            });
-
-
-            services.Configure<MvcOptions>(options =>
-            {
-                options.Filters.Add(new CorsAuthorizationFilterFactory("AllowAllOrigins"));
             });
 
             //----權限(AddAuthorization)，設定Attribute放在Action上做篩選----//
@@ -179,6 +85,7 @@ namespace SystemAuth
             //    });
             //    //options.AddPolicy("GeneralUser", policy => policy.RequireClaim(JwtClaimTypes.Role, "2"));
             //});    
+
             //註冊認證，讓所有API Method可做權限控管
             services.AddMvc(Configuration =>
             {
@@ -201,25 +108,30 @@ namespace SystemAuth
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseRouting();
+
             //----網域需要在指定條件----//
             app.UseCors("AllowAllOrigins");
 
             //----需要驗證JWT權限----//
             app.UseAuthentication();
-            
+
             //----個別Controller註冊Middleware Filter，驗證身分權限----//
             //app.UseMiddleware<xxxxFilter>();
             //app.UseMiddleware<>
 
             //----請求進入MVC，放在所有流程最後面----//
-            app.UseMvc();            
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }

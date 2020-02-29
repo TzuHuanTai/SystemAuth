@@ -1,19 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Net;
 using System.Text;
-using System.Threading.Tasks;
-using SystemAuth.Models;
+using System.Globalization;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.Configuration;
-using SystemAuth.Extensions;
-using Microsoft.AspNetCore.Http.Internal;
-using System.IO;
 using Microsoft.EntityFrameworkCore;
+using SystemAuth.Models;
+using SystemAuth.Extensions;
 
 /* 20180529 @Richard 統一在Startup.cs AddMvc中全域注入此Filter功能是為了達到要"動態"判斷，可判斷Request是否有權限。
  * 說明：
