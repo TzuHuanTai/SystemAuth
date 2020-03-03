@@ -8,7 +8,7 @@ using SystemAuth.Models.SQLite;
 namespace SystemAuth.Controllers
 {
     [Produces("application/json")]
-    [Route("api/Ctrls")]
+    [Route("api/[controller]")]
     public class CtrlsController : Controller
     {
         private readonly SystemAuthContext _context;

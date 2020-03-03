@@ -10,7 +10,7 @@ using SystemAuth.Models.SQLite;
 namespace SystemAuth.Controllers
 {
     [Produces("application/json")]
-    [Route("api/Menus")]
+    [Route("api/[controller]")]
     public class MenusController : Controller
     {
         private readonly SystemAuthContext _context;

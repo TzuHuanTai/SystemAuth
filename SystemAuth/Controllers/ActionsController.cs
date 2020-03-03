@@ -9,7 +9,7 @@ using SystemAuth.Models.SQLite;
 namespace SystemAuth.Controllers
 {
     [Produces("application/json")]
-    [Route("api/Actions")]
+    [Route("api/[controller]")]
     public class ActionsController : Controller
     {
         private readonly SystemAuthContext _context;

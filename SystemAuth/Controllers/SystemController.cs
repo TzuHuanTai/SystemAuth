@@ -96,7 +96,7 @@ namespace SystemAuth.Controllers
         }
 
         [HttpGet("[action]")]
-        public IEnumerable<vmMenu>  GetAllowedMenu()
+        public IEnumerable<VmMenu>  GetAllowedMenu()
         {
             //從Token抓user帳號，無則null
             string Account = _accessor.CurrentUserId();
@@ -116,13 +116,13 @@ namespace SystemAuth.Controllers
                 )
             ).OrderBy(x=>x.SortNo).ToList();
 
-            List<vmMenu> ReturnMenu = new List<vmMenu>();
+            List<VmMenu> ReturnMenu = new List<VmMenu>();
             
             //Menu有很多棵tree，每個tree一個root
             foreach (Menu Root in AuthMenu.Where(x => x.RootMenuId == null))
             {
                 //找出所有root底下的leafs
-                List<vmMenu> Tree = TreeMenu(Root, AuthMenu);
+                List<VmMenu> Tree = TreeMenu(Root, AuthMenu);
 
                 //加入回傳的tree
                 ReturnMenu.Add(Tree[0]);
@@ -132,11 +132,11 @@ namespace SystemAuth.Controllers
         }
 
         //children會有很多menu因此屬性為List<vmMenu>，所以必須回傳List<vmMenu>才可跑遞迴
-        private List<vmMenu> TreeMenu(Menu Root, List<Menu> AllMenu)
+        private List<VmMenu> TreeMenu(Menu Root, List<Menu> AllMenu)
         {
-            List<vmMenu> ReturnTreeMenu = new List<vmMenu>();
+            List<VmMenu> ReturnTreeMenu = new List<VmMenu>();
 
-            vmMenu TreeRoot = new vmMenu()
+            VmMenu TreeRoot = new VmMenu()
             {
                 Path = Root.Path,
                 MenuText = Root.MenuText,
@@ -146,11 +146,11 @@ namespace SystemAuth.Controllers
 
             if (AllMenu.Any(x => x.RootMenuId == Root.MenuId))
             {
-                TreeRoot.Children = new List<vmMenu>();
+                TreeRoot.Children = new List<VmMenu>();
                 //找root及其底下leafs
                 foreach (Menu item in AllMenu.Where(x => x.RootMenuId == Root.MenuId)) // && x.MenuId == Root.MenuId
                 {
-                    List<vmMenu> Node = TreeMenu(item, AllMenu);
+                    List<VmMenu> Node = TreeMenu(item, AllMenu);
                     TreeRoot.Children.Add(Node[0]);
                 };                
             } 

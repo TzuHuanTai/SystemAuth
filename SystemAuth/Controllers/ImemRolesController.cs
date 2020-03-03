@@ -9,7 +9,7 @@ using SystemAuth.Models.SQLite;
 namespace SystemAuth.Controllers
 {
     [Produces("application/json")]
-    [Route("api/ImemRoles")]
+    [Route("api/[controller]")]
     public class ImemRolesController : Controller
     {
         private readonly SystemAuthContext _context;

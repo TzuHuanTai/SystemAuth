@@ -11,7 +11,7 @@ using SystemAuth.Models.SQLite;
 namespace SystemAuth.Controllers
 {
     [Produces("application/json")]
-    [Route("api/Members")]
+    [Route("api/[controller]")]
     public class MembersController : Controller
     {
         private readonly SystemAuthContext _context;

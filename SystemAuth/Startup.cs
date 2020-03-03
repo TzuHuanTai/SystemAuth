@@ -57,11 +57,8 @@ namespace SystemAuth
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             //----連接DB，原本ConnectString移到appsettings.json----//
-            //services.AddDbContext<SystemAuthContext>(options =>
-            //    options.UseSqlServer(Configuration.GetConnectionString("AuthDB"))
-            //);
             services.AddDbContext<SystemAuthContext>(options =>
-                options.UseSqlite(Configuration.GetConnectionString("systemAuth"))
+                options.UseSqlite(Configuration.GetConnectionString("SystemAuth"))
             );
 
             //----加入cross-origin-request-sharing----//
@@ -77,28 +74,9 @@ namespace SystemAuth
                     });
             });
 
-            //----權限(AddAuthorization)，設定Attribute放在Action上做篩選----//
-            //services.AddAuthorization(options =>
-            //{
-            //    options.AddPolicy("AdministratorUser", policy => {
-            //        policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
-            //        policy.RequireAuthenticatedUser();
-            //        policy.RequireClaim(JwtClaimTypes.Role, "1");
-            //    });
-            //    //options.AddPolicy("GeneralUser", policy => policy.RequireClaim(JwtClaimTypes.Role, "2"));
-            //});    
-
             //註冊認證，讓所有API Method可做權限控管
             services.AddMvc(Configuration =>
             {
-                //AuthorizationPolicy policy = new AuthorizationPolicyBuilder()
-                //                .RequireAuthenticatedUser()
-                //                .Build();
-                //Configuration.Filters.Add(new AuthorizeFilter(policy));
-
-                //全域註冊Filter，靠AuthorizationFilter驗證身分權限                
-                //Configuration.Filters.Add(new AuthorizationFilter());
-
                 //全域註冊Filter，ServiceFilterAttribute方式會被解析要用dependency injection，這樣就可在filter使用db功能
                 Configuration.Filters.Add(new ServiceFilterAttribute(typeof(AuthorizationFilter)));
             });
@@ -124,10 +102,6 @@ namespace SystemAuth
 
             //----需要驗證JWT權限----//
             app.UseAuthentication();
-
-            //----個別Controller註冊Middleware Filter，驗證身分權限----//
-            //app.UseMiddleware<xxxxFilter>();
-            //app.UseMiddleware<>
 
             //----請求進入MVC，放在所有流程最後面----//
             app.UseEndpoints(endpoints =>

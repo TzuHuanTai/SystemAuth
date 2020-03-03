@@ -10,7 +10,7 @@ using SystemAuth.Models.SQLite;
 namespace SystemAuth.Controllers
 {
     [Produces("application/json")]
-    [Route("api/RoleGroups")]
+    [Route("api/[controller]")]
     public class RoleGroupsController : Controller
     {
         private readonly SystemAuthContext _context;

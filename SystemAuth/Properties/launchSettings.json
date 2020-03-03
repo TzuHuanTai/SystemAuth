@@ -19,7 +19,7 @@
     "SystemAuth": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "api/system/GetAllowedMenu",
+      "launchUrl": "api/system/getAllowedMenu",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

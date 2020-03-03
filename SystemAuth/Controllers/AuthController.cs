@@ -1,24 +1,26 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using System.Globalization;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using System.IdentityModel.Tokens.Jwt;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Configuration;
 using SystemAuth.ViewModels;
+using SystemAuth.Extensions;
 using SystemAuth.Models.SQLite;
 
 namespace SystemAuth.Controllers
 {
     [Produces("application/json")]
-    [Route("api/Auth")]
+    [Route("api/[controller]")]
     public class AuthController : Controller
     {
-        private IConfiguration _config;
+        private readonly IConfiguration _config;
         private readonly SystemAuthContext _context;
         private readonly IHttpContextAccessor _accessor;
         
@@ -28,7 +30,26 @@ namespace SystemAuth.Controllers
             _context = context;
             _accessor = accessor;
         }
-               
+
+        [HttpGet("[action]/{ctrlName}/{actName}")]
+        public IActionResult CheckAuth([FromRoute] string ctrlName, [FromRoute]string actName)
+        {
+            string authHeader = HttpContext.GetToken();
+            string userAccount = HttpContext.CurrentUserId();       //從jwt抓id，無jwt或偽造時，讀出userAccount = null
+            var userRole = _context.GetUserRoles(userAccount);
+
+            // ----正式驗證request權限---- //
+            if (authHeader != null && authHeader.StartsWith("Bearer", true, CultureInfo.CurrentCulture))
+            {
+                if (_context.HasAllowedAction(userRole, actName) && _context.HasUserRole(userRole, userAccount))
+                {
+                    return Ok();
+                }
+            }
+
+            return Unauthorized();
+        }
+
         [HttpPost("[action]")]
         public async Task<IActionResult> Authenticate([FromBody]AuthRequest AuthRequest) //, string Account, string Password
         {

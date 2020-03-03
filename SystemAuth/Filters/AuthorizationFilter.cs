@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Linq;
-using System.Text;
 using System.Globalization;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.EntityFrameworkCore;
 using SystemAuth.Extensions;
 using SystemAuth.Models.SQLite;
 
@@ -26,144 +21,49 @@ namespace SystemAuth.Filters
     public class AuthorizationFilter: Attribute,IAuthorizationFilter
     {        
         private readonly SystemAuthContext _context;
-        private readonly IHttpContextAccessor _accessor;
       
-        public AuthorizationFilter(SystemAuthContext dbContext, IHttpContextAccessor accessor)
+        public AuthorizationFilter(SystemAuthContext dbContext)
         {            
             _context = dbContext;
-            _accessor = accessor;
         }
 
         public void OnAuthorization(AuthorizationFilterContext context)
         {
-            //----取得參數判斷user是否有權限使用Action----//
-            List<int> userRole = new List<int>() { 0 };    //無jwt或偽造時，預設userRole = 0 (Guest)            
-            string authHeader = context.HttpContext.Request.Headers["Authorization"];
-            string accessAction = context.CurrentAction(); //取得Request呼叫的Action名稱
-            string userAccount = context.CurrentUserId();  //從jwt抓id，無jwt或偽造時，讀出userAccount = null
+            // 取得Request呼叫的Action名稱
+            string accessAction = context.CurrentAction();
 
-            /* ----所有request都紀錄log----
-                Request.Body是一個Stream，不能Position = 0
-                只能讀取一次
-                因此net core提供EnableRewind()倒帶功能
-                開啟後讀取完只要把Positoin歸零，就可重複讀寫！  */
-                //掉header bug .net core 2.2.0才會修正，小心使用
-            //HttpRequest request = context.HttpContext.Request;
-            //request.EnableRewind();            
-            //LogRequest(request, userAccount, accessAction);    //call db to log
-            //request.Body.Seek(0, SeekOrigin.Begin);
-
-            // ----正式驗證request權限---- //
-            if (authHeader != null && authHeader.StartsWith("Bearer", true, CultureInfo.CurrentCulture))
+            // 外部的驗證在"/api/auth/checkAuth"實做，內部controller驗證
+            if (string.Compare(accessAction, "checkAuth", true) != 0)
             {
-                //----Extract credentials----//
-                //string encodedUsernamePassword = authHeader.Substring("Basic ".Length).Trim();
-                //Encoding encoding = Encoding.GetEncoding("iso-8859-1");
-                //string usernamePassword = encoding.GetString(Convert.FromBase64String(encodedUsernamePassword));
+                //----取得參數判斷user是否有權限使用Action----//
+                string authHeader = context.HttpContext.GetToken();
+                string userAccount = context.HttpContext.CurrentUserId(); // 從jwt抓id，無jwt或偽造時，讀出userAccount = null
+                var userRole = _context.GetUserRoles(userAccount);
 
-                                                            
-                List<int> RoleID = _context.IMemberRole
-                    .Where(y => y.Account == userAccount)
-                    .Select(x => x.RoleId)
-                    .ToList();
-
-                //任一角色有權限即可執行Action
-                userRole.AddRange(RoleID);
-                if (HasAllowedAction(userRole, accessAction) && HasUserRole(userRole, userAccount))
+                // ----正式驗證request權限---- //
+                if (authHeader != null && authHeader.StartsWith("Bearer", true, CultureInfo.CurrentCulture))
                 {
-                    //here should write a log per request!!??
-                    //do nothing here!
+
+                    if (!(_context.HasAllowedAction(userRole, accessAction) && _context.HasUserRole(userRole, userAccount)))
+                    {
+                        FailAuthorize(context);
+                    }
                 }
+                //Guest & Anonymous without authorized header, 沒有帶入header，userRole預設是0，對照database Guest角色代號0
                 else
                 {
-                    FailAuthorize(context);
-                }
-            }
-            else if (authHeader == null) //Guest & Anonymous without authorized header
-            {
-                //沒有帶入header，userRole預設是0，對照database Guest角色代號0
-                if (HasAllowedAction(userRole, accessAction))
-                {
-                    //pass vertification and do nothing here
-                }
-                else
-                {
-                    FailAuthorize(context);
+                    if (!_context.HasAllowedAction(userRole, accessAction))
+                    {
+                        FailAuthorize(context);
+                    }
                 }
             }
         }
 
         public void FailAuthorize(AuthorizationFilterContext context)
         {
-            #region 其他回傳方式
-            //context.HttpContext.Response.StatusCode = (int)HttpStatusCode.Forbidden;
-
-            //顯示Json格式"Unauthorized"
-            //context.Result = new JsonResult("Unauthorized");
-
-            //顯示400 not found
-            //context.Result = new NotFoundResult();
-
-
-
-            //預設禁止畫面：描述寫403
-            //context.Result = new ForbidResult("403");
-
-            //重新導向至特定View
-            //context.Result = new ViewResult() { ViewName = "UnauthorizedAccess" };
-
-            //報錯
-            //throw new Exception("The authorization header is either empty or isn't Basic."); 
-            #endregion
             //顯示 401 Unauthorized
             context.Result = new UnauthorizedResult();
-        }      
-              
-        //檢查使用者是否有該角色
-        public bool HasUserRole(List<int> userRole, string username)
-        {
-            return _context.IMemberRole.Any(x => x.Account == username && userRole.Contains(x.RoleId));
-        }
-
-        //檢查使用者是否有權限執行該Action
-        public bool HasAllowedAction(List<int> userRole, string action)
-        {
-            return _context.Actions.Any(x =>
-                x.Name == action &&
-                x.IActionRole.Any(
-                    y => userRole.Contains(y.RoleId) && y.ActionId == x.ActionId
-                )
-            );
-        }
-
-
-        public async void LogRequest(HttpRequest Request, string Account, string Action)
-        {
-
-            byte[] buffer = new byte[Convert.ToInt32(Request.ContentLength)];
-            await Request.Body.ReadAsync(buffer, 0, buffer.Length);
-            string bodyAsText = Encoding.UTF8.GetString(buffer);
-
-            //紀錄System Log
-            _context.SystemLog.Add(new SystemLog
-            {
-                LogTime = DateTime.Now,
-                Account = Account ?? "Guest",
-                Action = Action,
-                Route = Request.Path,
-                Method = Request.Method,
-                Detail = bodyAsText,
-                Ip = _accessor.HttpContext.Connection.RemoteIpAddress.ToString()
-            });
-
-            try
-            {
-                _context.SaveChanges();
-            }
-            catch (DbUpdateException)
-            {
-                throw;
-            }
         }
     }
 }

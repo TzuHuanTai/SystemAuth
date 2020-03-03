@@ -6,7 +6,7 @@ using SystemAuth.Models;
 
 namespace SystemAuth.ViewModels
 {
-    public class vmIRole
+    public class VmIRole
     {
     }
 
