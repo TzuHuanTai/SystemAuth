@@ -10,11 +10,11 @@ namespace SystemAuth.Controllers
 {
     [Produces("application/json")]
     [Route("api/[controller]")]
-    public class IactionRolesController : Controller
+    public class IActionRolesController : Controller
     {
         private readonly SystemAuthContext _context;
 
-        public IactionRolesController(SystemAuthContext context)
+        public IActionRolesController(SystemAuthContext context)
         {
             _context = context;
         }

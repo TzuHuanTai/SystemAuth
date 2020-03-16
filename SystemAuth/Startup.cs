@@ -62,17 +62,7 @@ namespace SystemAuth
             );
 
             //----加入cross-origin-request-sharing----//
-            services.AddCors(options=>
-            {
-                options.AddPolicy("AllowAllOrigins",
-                    builder =>
-                    {
-                        builder.AllowAnyOrigin()
-                               .AllowAnyMethod()
-                               .AllowAnyHeader()
-                               .WithExposedHeaders("Content-Disposition"); // content-disposition is *exposed* (and allowed because of AllowAnyHeader)
-                    });
-            });
+            services.AddCors();
 
             //註冊認證，讓所有API Method可做權限控管
             services.AddMvc(Configuration =>
@@ -98,7 +88,9 @@ namespace SystemAuth
             app.UseRouting();
 
             //----網域需要在指定條件----//
-            app.UseCors("AllowAllOrigins");
+            app.UseCors(options => 
+                options.SetIsOriginAllowed(x => _ = true).AllowAnyMethod().AllowAnyHeader().AllowCredentials()
+            );
 
             //----需要驗證JWT權限----//
             app.UseAuthentication();

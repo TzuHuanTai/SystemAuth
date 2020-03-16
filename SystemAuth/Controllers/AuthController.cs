@@ -153,8 +153,8 @@ namespace SystemAuth.Controllers
             //用string.Compare區分大小寫判斷帳號密碼
             //若單純用x.Account == Account && x.Password == Password，無法區分大小寫
             return context.Member.Any(x =>
-                string.Compare(x.Account, Account, false) == 0 &&
-                string.Compare(x.Password, Password, false) == 0
+                x.Account ==  Account &&
+                x.Password == Password
             );
         }
 
@@ -163,7 +163,7 @@ namespace SystemAuth.Controllers
             //用string.Compare區分大小寫判斷帳號密碼
             //若單純用x.Account == Account && x.Password == Password，無法區分大小寫
             return context.Token.Any(x =>
-                string.Compare(x.Account, Account, false) == 0                 
+                x.Account == Account
             );
         }
 

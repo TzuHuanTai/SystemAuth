@@ -10,11 +10,11 @@ namespace SystemAuth.Controllers
 {
     [Produces("application/json")]
     [Route("api/[controller]")]
-    public class ImemRolesController : Controller
+    public class IMemberRolesController : Controller
     {
         private readonly SystemAuthContext _context;
 
-        public ImemRolesController(SystemAuthContext context)
+        public IMemberRolesController(SystemAuthContext context)
         {
             _context = context;
         }

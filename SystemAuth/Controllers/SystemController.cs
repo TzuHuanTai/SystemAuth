@@ -96,39 +96,46 @@ namespace SystemAuth.Controllers
         }
 
         [HttpGet("[action]")]
-        public IEnumerable<VmMenu>  GetAllowedMenu()
+        public IActionResult GetAllowedMenu()
         {
-            //從Token抓user帳號，無則null
-            string Account = _accessor.CurrentUserId();
-
-            //該帳號所有角色可進入的menu都篩選出來
-            List<int> AllowedMenuId = _context.IMenuRole
-				//角色至少有Guest: 0 
-				.Where(x => x.Role.IMemberRole.Any(y => y.Account == Account) || x.RoleId == 0)
-                .Select(x => x.MenuId)
-				.Distinct()
-                .ToList();
-
-            //撈出允許的menu資料，並依造SortNo排序
-            List<Menu> AuthMenu = _context.Menu.Where(x =>
-                x.IMenuRole.Any(y =>
-                    AllowedMenuId.Contains(y.MenuId)
-                )
-            ).OrderBy(x=>x.SortNo).ToList();
-
-            List<VmMenu> ReturnMenu = new List<VmMenu>();
-            
-            //Menu有很多棵tree，每個tree一個root
-            foreach (Menu Root in AuthMenu.Where(x => x.RootMenuId == null))
+            try
             {
-                //找出所有root底下的leafs
-                List<VmMenu> Tree = TreeMenu(Root, AuthMenu);
+                //從Token抓user帳號，無則null
+                string Account = _accessor.CurrentUserId();
 
-                //加入回傳的tree
-                ReturnMenu.Add(Tree[0]);
-            };
+                //該帳號所有角色可進入的menu都篩選出來
+                List<int> AllowedMenuId = _context.IMenuRole
+                    //角色至少有Guest: 0 
+                    .Where(x => x.Role.IMemberRole.Any(y => y.Account == Account) || x.RoleId == 0)
+                    .Select(x => x.MenuId)
+                    .Distinct()
+                    .ToList();
 
-            return ReturnMenu;
+                //撈出允許的menu資料，並依造SortNo排序
+                List<Menu> AuthMenu = _context.Menu.Where(x =>
+                    x.IMenuRole.Any(y =>
+                        AllowedMenuId.Contains(y.MenuId)
+                    )
+                ).OrderBy(x => x.SortNo).ToList();
+
+                List<VmMenu> ReturnMenu = new List<VmMenu>();
+
+                //Menu有很多棵tree，每個tree一個root
+                foreach (Menu Root in AuthMenu.Where(x => x.RootMenuId == null))
+                {
+                    //找出所有root底下的leafs
+                    List<VmMenu> Tree = TreeMenu(Root, AuthMenu);
+
+                    //加入回傳的tree
+                    ReturnMenu.Add(Tree[0]);
+                };
+
+                return Ok(ReturnMenu);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         //children會有很多menu因此屬性為List<vmMenu>，所以必須回傳List<vmMenu>才可跑遞迴
