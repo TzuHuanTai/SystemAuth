@@ -22,8 +22,7 @@
       "launchUrl": "api/system/getAllowedMenu",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "applicationUrl": "http://localhost:4064/"
+      }
     }
   }
 }

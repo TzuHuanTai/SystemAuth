@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using System.Net;
 
 namespace SystemAuth
 {
@@ -14,7 +15,18 @@ namespace SystemAuth
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>();
+                    webBuilder.UseStartup<Startup>()
+                              .UseKestrel(options =>
+                              {
+                                  // http://localhost:5000/
+                                  options.Listen(IPAddress.Any, 5080);
+                                  // https://localhost:5443/
+                                  options.Listen(IPAddress.Any, 5443, listenOptions =>
+                                  {
+                                      listenOptions.UseHttps("backend.pfx", "2ooixuui");
+                                  });
+                              })
+                              .UseUrls("https://0.0.0.0:5443");
                 });
     }
 }
