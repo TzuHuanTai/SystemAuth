@@ -18,9 +18,7 @@ namespace SystemAuth
                     webBuilder.UseStartup<Startup>()
                               .UseKestrel(options =>
                               {
-                                  // http://localhost:5000/
                                   options.Listen(IPAddress.Any, 5080);
-                                  // https://localhost:5443/
                                   options.Listen(IPAddress.Any, 5443, listenOptions =>
                                   {
                                       listenOptions.UseHttps("backend.pfx", "2ooixuui");
