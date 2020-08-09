@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using SystemAuth.ViewModels;
 using SystemAuth.Models.SQLite;
+using System;
 
 namespace SystemAuth.Controllers
 {
@@ -174,8 +175,26 @@ namespace SystemAuth.Controllers
                 return NotFound();
             }
 
-            _context.RoleGroup.Remove(roleGroup);
-            await _context.SaveChangesAsync();
+            try
+            {
+                var iActionRole = _context.IActionRole.Where(r => r.RoleId == id);
+                var iCtrlRole = _context.ICtrlRole.Where(r => r.RoleId == id);
+                var iMemberRole = _context.IMemberRole.Where(r => r.RoleId == id);
+                var iMenuRole = _context.IMenuRole.Where(r => r.RoleId == id);
+                _context.IActionRole.RemoveRange(iActionRole);
+                _context.ICtrlRole.RemoveRange(iCtrlRole);
+                _context.IMemberRole.RemoveRange(iMemberRole);
+                _context.IMenuRole.RemoveRange(iMenuRole);
+                await _context.SaveChangesAsync();
+
+                _context.RoleGroup.Remove(roleGroup);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            
 
             return Ok(roleGroup);
         }

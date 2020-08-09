@@ -1,164 +1,177 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SystemAuth.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using SystemAuth.Models.SQLite;
+using SystemAuth.ViewModels;
 
 namespace SystemAuth.Controllers
 {
-    [Produces("application/json")]
-    [Route("api/[controller]")]
-    public class ActionsController : Controller
-    {
-        private readonly SystemAuthContext _context;
+	[Produces("application/json")]
+	[Route("api/[controller]")]
+	public class ActionsController : Controller
+	{
+		private readonly SystemAuthContext _context;
 
-        public ActionsController(SystemAuthContext context)
-        {
-            _context = context;
-        }
+		public ActionsController(SystemAuthContext context)
+		{
+			_context = context;
+		}
 
-        [HttpGet("[action]")]
-        public IEnumerable<CtrlActionNode> GetActionTree()
-        {
-            IEnumerable<Actions> ActionsList = _context.Actions
-                .OrderBy(x => x.ControllerId)
-                .ThenByDescending(x => x.Method)
-                .ThenByDescending(x => x.Name);
+		[HttpGet("[action]")]
+		public IEnumerable<CtrlActionNode> GetActionTree()
+		{
+			IEnumerable<Actions> ActionsList = _context.Actions
+				.OrderBy(x => x.ControllerId)
+				.ThenByDescending(x => x.Method)
+				.ThenByDescending(x => x.Name);
 
-            IEnumerable<Ctrl> CtrlsList = _context.Ctrl
-                .OrderBy(x => x.Name);            
+			IEnumerable<Ctrl> CtrlsList = _context.Ctrl
+				.OrderBy(x => x.Name);
 
-            List<CtrlActionNode> ReturnList = new List<CtrlActionNode>();
+			List<CtrlActionNode> ReturnList = new List<CtrlActionNode>();
 
-            foreach(var Ctrl in CtrlsList)
-            {
-                List<Actions> ChildList = ActionsList.Where(x=>x.ControllerId==Ctrl.CtrlId).ToList();
+			foreach (var Ctrl in CtrlsList)
+			{
+				List<Actions> ChildList = ActionsList.Where(x => x.ControllerId == Ctrl.CtrlId).ToList();
 
-                List<ActionNode> Child = new List<ActionNode>();
-                foreach (Actions action in ChildList)
-                {
-                    Child.Add(new ActionNode
+				List<ActionNode> Child = new List<ActionNode>();
+				foreach (Actions action in ChildList)
+				{
+					Child.Add(new ActionNode
 					{
 						//樹枝與樹幹相同屬性之名稱必須相同
-                        Id=action.ActionId,
-                        Name=action.Name,
-                        Method=action.Method
-                    });
-                }
+						Id = action.ActionId,
+						Name = action.Name,
+						Method = action.Method
+					});
+				}
 
-                ReturnList.Add(new CtrlActionNode
-                {
-                    Id=Ctrl.CtrlId,
-                    Name = Ctrl.Name,
-                    Children = Child
-                });
-            }   
+				ReturnList.Add(new CtrlActionNode
+				{
+					Id = Ctrl.CtrlId,
+					Name = Ctrl.Name,
+					Children = Child
+				});
+			}
 
-            return ReturnList;
-        }
+			return ReturnList;
+		}
 
-        // GET: api/Actions
-        [HttpGet]
-        public IEnumerable<Actions> GetActions()
-        {
-            return _context.Actions;
-        }
+		// GET: api/Actions
+		[HttpGet]
+		public IEnumerable<Actions> GetActions()
+		{
+			return _context.Actions;
+		}
 
-        // GET: api/Actions/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetActions([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+		// GET: api/Actions/5
+		[HttpGet("{id}")]
+		public async Task<IActionResult> GetActions([FromRoute] int id)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
 
-            var actions = await _context.Actions.SingleOrDefaultAsync(m => m.ActionId == id);
+			var actions = await _context.Actions.SingleOrDefaultAsync(m => m.ActionId == id);
 
-            if (actions == null)
-            {
-                return NotFound();
-            }
+			if (actions == null)
+			{
+				return NotFound();
+			}
 
-            return Ok(actions);
-        }
+			return Ok(actions);
+		}
 
-        // PUT: api/Actions/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutActions([FromRoute] int id, [FromBody] Actions actions)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+		// PUT: api/Actions/5
+		[HttpPut("{id}")]
+		public async Task<IActionResult> PutActions([FromRoute] int id, [FromBody] Actions actions)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
 
-            if (id != actions.ActionId)
-            {
-                return BadRequest();
-            }
+			if (id != actions.ActionId)
+			{
+				return BadRequest();
+			}
 
-            _context.Entry(actions).State = EntityState.Modified;
+			_context.Entry(actions).State = EntityState.Modified;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ActionsExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+			try
+			{
+				await _context.SaveChangesAsync();
+			}
+			catch (DbUpdateConcurrencyException)
+			{
+				if (!ActionsExists(id))
+				{
+					return NotFound();
+				}
+				else
+				{
+					throw;
+				}
+			}
 
-            return NoContent();
-        }
+			return NoContent();
+		}
 
-        // POST: api/Actions
-        [HttpPost]
-        public async Task<IActionResult> PostActions([FromBody] Actions actions)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+		// POST: api/Actions
+		[HttpPost]
+		public async Task<IActionResult> PostActions([FromBody] Actions actions)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
 
-            _context.Actions.Add(actions);
-            await _context.SaveChangesAsync();
+			_context.Actions.Add(actions);
+			await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetActions", new { id = actions.ActionId }, actions);
-        }
+			return CreatedAtAction("GetActions", new { id = actions.ActionId }, actions);
+		}
 
-        // DELETE: api/Actions/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteActions([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+		// DELETE: api/Actions/5
+		[HttpDelete("{id}")]
+		public async Task<IActionResult> DeleteActions([FromRoute] int id)
+		{
+			if (!ModelState.IsValid)
+			{
+				return BadRequest(ModelState);
+			}
 
-            var actions = await _context.Actions.SingleOrDefaultAsync(m => m.ActionId == id);
-            if (actions == null)
-            {
-                return NotFound();
-            }
+			var actions = await _context.Actions.SingleOrDefaultAsync(m => m.ActionId == id);
 
-            _context.Actions.Remove(actions);
-            await _context.SaveChangesAsync();
+			if (actions == null)
+			{
+				return NotFound();
+			}
 
-            return Ok(actions);
-        }
+			try
+			{
+				var iActionRole = _context.IActionRole.Where(r => r.ActionId == id);
+				_context.IActionRole.RemoveRange(iActionRole);
+				await _context.SaveChangesAsync();
 
-        private bool ActionsExists(int id)
-        {
-            return _context.Actions.Any(e => e.ActionId == id);
-        }
-    }
+				_context.Actions.Remove(actions);
+				await _context.SaveChangesAsync();
+			}
+			catch (Exception ex)
+			{
+				return BadRequest(ex.Message);
+			}
+
+			return Ok(actions);
+		}
+
+		private bool ActionsExists(int id)
+		{
+			return _context.Actions.Any(e => e.ActionId == id);
+		}
+	}
 }

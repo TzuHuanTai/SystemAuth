@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using SystemAuth.ViewModels;
 using SystemAuth.Models.SQLite;
+using System;
 
 namespace SystemAuth.Controllers
 {
@@ -169,14 +170,26 @@ namespace SystemAuth.Controllers
                 return BadRequest(ModelState);
             }
 
-            var menu = await _context.Menu.SingleOrDefaultAsync(m => m.MenuId == id);
+            var menu = await _context.Menu.AsNoTracking().SingleOrDefaultAsync(m => m.MenuId == id);
+            
             if (menu == null)
             {
                 return NotFound();
             }
 
-            _context.Menu.Remove(menu);
-            await _context.SaveChangesAsync();
+            try
+            {
+                var iMenuRole = _context.IMenuRole.Where(r => r.MenuId == id);
+                _context.IMenuRole.RemoveRange(iMenuRole);
+                await _context.SaveChangesAsync();
+
+                _context.Menu.Remove(menu);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
 
             return Ok(menu);
         }
