@@ -166,19 +166,15 @@ namespace SystemAuth.Models.SQLite
 
                 entity.Property(e => e.AddTime).HasColumnType("DATETIME");
 
-                entity.Property(e => e.Domain).HasColumnType("NVARCHAR (50)");
-
                 entity.Property(e => e.Email).HasColumnType("NVARCHAR (50)");
 
-                entity.Property(e => e.FirstName)
+                entity.Property(e => e.Name)
                     .IsRequired()
                     .HasColumnType("NVARCHAR (20)");
 
                 entity.Property(e => e.IsActive)
                     .IsRequired()
-                    .HasColumnType("BOOLEAN");
-
-                entity.Property(e => e.LastName).HasColumnType("NVARCHAR (20)");
+                    .HasColumnType("INTEGER");
 
                 entity.Property(e => e.Password).HasColumnType("NVARCHAR (50)");
 

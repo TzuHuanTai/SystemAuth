@@ -30,59 +30,26 @@ namespace SystemAuth.Controllers
 		//[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 		//[ServiceFilter(typeof(AuthorizationFilter))]
 		[HttpGet]
-		public IEnumerable<Member> GetMember()
+		public IActionResult GetMember()
 		{
-			List<Member> result = _context.Member.ToList();
-			
-			result.Select(x => {
-				x.Password = ""; return x;
-			}).ToList();
-
-			return result;
-		}
-
-        // GET: api/Members/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetMember([FromRoute] string id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var member = await _context.Member.SingleOrDefaultAsync(m => m.Account == id);
-			//不回傳密碼
-			member.Password = "";
-
-            if (member == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(member);
-        }
-
-		// GET: api/Members/GetMemberName/aaa
-		[HttpGet("[action]/{account}")]
-		public IActionResult GetMemberName([FromRoute] string account)
-		{
-			if (!ModelState.IsValid)
+			var result = _context.Member.Select(x => new
 			{
-				return BadRequest(ModelState);
+				x.IsActive,
+				x.Name,
+				x.Email,
+				x.AddTime,
+				x.Account,
+				x.UpdatedTime
+			});
+
+            if (IsAdmin())
+            {
+                return Ok(result);
 			}
-
-			var member = _context.Member.Where(m => m.Account == account).ToList()
-				.Select(x => 
-					new { x.Account, x.FirstName, x.LastName}
-				);						
-
-
-			if (member == null)
+			else
 			{
-				return NotFound();
-			}
-
-			return Ok(member.FirstOrDefault());
+                return Ok(result.Where(x => x.Account == _accessorUser));
+            }
 		}
 
 		// PUT: api/Members/5
@@ -94,28 +61,24 @@ namespace SystemAuth.Controllers
                 return BadRequest(ModelState);
             }
 
-            if (id != member.Account)
+            if ((id != member.Account || id != _accessorUser) && !IsAdmin())
             {
-                return BadRequest();
+                return Unauthorized();
             }
-
-			Member Origin = _context.Member.Single(x => x.Account == id);
-
-			_context.Entry(member).State = EntityState.Modified;
 
             try
             {
-				//防止新增時間被更動
-				member.AddTime = Origin.AddTime;
+                Member origin = _context.Member.Single(x => x.Account == id);
+                origin.Name = member.Name;
+                origin.Email = member.Email;
+                origin.IsActive = member.IsActive;
+                origin.UpdatedTime = DateTime.Now;
 
-				//刷新修改時間
-                member.UpdatedTime = DateTime.Now;
-
-                await _context.SaveChangesAsync();
+				await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!MemberExists(id))
+                if (!IsMemberExists(id))
                 {
                     return NotFound();
                 }
@@ -137,18 +100,16 @@ namespace SystemAuth.Controllers
                 return BadRequest(ModelState);
             }
 
-            //新增、更新時間以伺服器時間為準
-            member.AddTime = DateTime.Now;
-            member.UpdatedTime = DateTime.Now;
-
-            _context.Member.Add(member);
             try
             {
+                member.AddTime = DateTime.Now;
+                member.UpdatedTime = DateTime.Now;
+                _context.Member.Add(member);
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateException)
             {
-                if (MemberExists(member.Account))
+                if (IsMemberExists(member.Account))
                 {
                     return new StatusCodeResult(StatusCodes.Status409Conflict);
                 }
@@ -170,21 +131,32 @@ namespace SystemAuth.Controllers
                 return BadRequest(ModelState);
             }
 
-            var member = await _context.Member.SingleOrDefaultAsync(m => m.Account == id);
-            if (member == null)
+            if (!IsMemberExists(id))
             {
                 return NotFound();
             }
 
+            var member = _context.Member.Include(r => r.Token).Include(r => r.IMemberRole).Single(x => x.Account == id);
+
+			if (member.Token != null)
+			{
+                _context.Token.Remove(member.Token);
+            }
+            _context.IMemberRole.RemoveRange(member.IMemberRole);
             _context.Member.Remove(member);
             await _context.SaveChangesAsync();
 
-            return Ok(member);
+            return Ok();
         }
 
-        private bool MemberExists(string id)
+        private bool IsMemberExists(string id)
         {
             return _context.Member.Any(e => e.Account == id);
+        }
+
+        private bool IsAdmin()
+		{
+            return _context.IMemberRole.Where(m => m.Account == _accessorUser).Any(x => x.RoleId == 1);
         }
     }
 }

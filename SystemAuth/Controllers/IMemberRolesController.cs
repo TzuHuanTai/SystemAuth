@@ -19,13 +19,6 @@ namespace SystemAuth.Controllers
             _context = context;
         }
 
-        // GET: api/ImemRoles
-        [HttpGet]
-        public IEnumerable<IMemberRole> GetImemRole()
-        {
-            return _context.IMemberRole;
-        }
-
         // GET: api/ImemRoles/5
         [HttpGet("{id}")]
         public async Task<IActionResult> GetImemRole([FromRoute] string id)
